@@ -1,9 +1,7 @@
 import bpy
-import os
-from bpy.props import StringProperty, EnumProperty, IntProperty, CollectionProperty
-from bpy.types import PropertyGroup, UIList, Operator, Panel
+import os.path
 
-class IM_GUI_FL_UL_ImportList(UIList):
+class IM_GUI_FL_UL_ImportList(bpy.types.UIList):
     """IM_GUI Import List."""
 
     def draw_item(self, context, layout, data, item, icon, active_data,
@@ -23,7 +21,7 @@ class IM_GUI_FL_UL_ImportList(UIList):
             layout.label(text="", icon = import_icon)
 
 
-class IM_GUI_FL_OT_NewItem(Operator):
+class IM_GUI_FL_OT_NewItem(bpy.types.Operator):
     """Add a new file(s) to the list."""
 
     bl_idname = "icomake_gui_fl.new_item"
@@ -32,7 +30,7 @@ class IM_GUI_FL_OT_NewItem(Operator):
     files: bpy.props.CollectionProperty(name="File Path",type=bpy.types.OperatorFileListElement,)
     directory: bpy.props.StringProperty(subtype='DIR_PATH',)
     
-    filter_glob: StringProperty( default='*.smd;*.obj', options={'HIDDEN'} )
+    filter_glob: bpy.props.StringProperty( default='*.smd;*.obj', options={'HIDDEN'} )
 
     filename_ext = ""
 
@@ -52,10 +50,8 @@ class IM_GUI_FL_OT_NewItem(Operator):
         return {'RUNNING_MODAL'}  
         # Tells Blender to hang on for the slow user input
 
-        return{'FINISHED'}
 
-
-class IM_GUI_FL_OT_DeleteItem(Operator):
+class IM_GUI_FL_OT_DeleteItem(bpy.types.Operator):
     """Remove the selected files from the list."""
 
     bl_idname = "icomake_gui_fl.delete_item"
@@ -74,7 +70,7 @@ class IM_GUI_FL_OT_DeleteItem(Operator):
 
         return{'FINISHED'}
 
-class IM_GUI_FL_OT_Clear(Operator):
+class IM_GUI_FL_OT_Clear(bpy.types.Operator):
     """Remove the selected files from the list."""
 
     bl_idname = "icomake_gui_fl.clear"
@@ -91,7 +87,7 @@ class IM_GUI_FL_OT_Clear(Operator):
         return{'FINISHED'}
 
 
-class IM_GUI_FL_OT_MoveItem(Operator):
+class IM_GUI_FL_OT_MoveItem(bpy.types.Operator):
     """Move an item in the list."""
 
     bl_idname = "icomake_gui_fl.move_item"
@@ -124,11 +120,11 @@ class IM_GUI_FL_OT_MoveItem(Operator):
         return{'FINISHED'}
 
 
-class IM_GUI_PT(Panel):
-    """Render Icons GUI."""
+class IM_GUI_PT_MassRender(bpy.types.Panel):
+    """Icon Maker Mass Render Panel."""
 
-    bl_label = "Render Icons"
-    bl_idname = "SCENE_PT_ICOMAKE_GUI"
+    bl_label = "Icons Maker Mass Render"
+    bl_idname = "SCENE_PT_ICOMAKE_GUI_MASSRENDER"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "scene"
@@ -160,10 +156,46 @@ class IM_GUI_PT(Panel):
             row.prop(item, "outline")
         
         row = layout.row()
-        row.prop(scene.icomake, "output_dir")
+        row.prop(scene.icomake_props, "output_dir")
         
         # Big render button
         layout.label(text="Big Button:")
         row = layout.row()
         row.scale_y = 3.0
         row.operator("icomake.massrender")
+
+#class IM_GUI_FL_UL_DataList(bpy.types.UIList):
+#    """IM_GUI Data List."""
+#
+#    def draw_item(self, context, layout, data, item, icon, active_data,
+#                  active_propname, index):
+#
+#        # We could write some code to decide which icon to use here...
+#        data_icon = 'RNA'
+#
+#        # Make sure your code supports all 3 layout types
+#        if self.layout_type in {'DEFAULT', 'COMPACT'}:
+#            layout.label(text = item.name, icon = data_icon)
+#            layout.label(text = item.type)
+#
+#        elif self.layout_type in {'GRID'}:
+#            layout.alignment = 'CENTER'
+#            layout.label(text="", icon = data_icon)
+#
+#class IM_GUI_PT_Data(bpy.types.Panel):
+#    """Render Icons GUI."""
+#
+#    bl_label = "Icon Maker Data"
+#    bl_idname = "SCENE_PT_ICOMAKE_GUI_DATA"
+#    bl_space_type = 'PROPERTIES'
+#    bl_region_type = 'WINDOW'
+#    bl_context = "scene"
+#
+#    def draw(self, context):
+#        layout = self.layout
+#        scene = context.scene
+#
+#        row = layout.row()
+#        row.template_list("IM_GUI_FL_UL_DataList", "ICOMAKE_GUI_DL", scene,
+#                          "icomake_data", scene, "icomake_data_index")
+

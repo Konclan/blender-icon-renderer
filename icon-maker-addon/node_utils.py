@@ -1,4 +1,5 @@
 import bpy
+from . import utils
 
 def nodesCleanMat(material):
     material.use_nodes = True
@@ -7,7 +8,8 @@ def nodesCleanMat(material):
         material.node_tree.nodes.remove(node)
         
 def nodesPMShader():    
-    nodeGroup = bpy.data.node_groups.new('PmShader', 'ShaderNodeTree')
+    nodeGroup = bpy.data.node_groups.new('[ICOMAKE] NGPmShader', 'ShaderNodeTree')
+    utils.setData(nodeGroup, "icomake_scenedata")
 
     nodeInputs = nodeGroup.nodes.new('NodeGroupInput')
     nodeOutputs = nodeGroup.nodes.new('NodeGroupOutput')
@@ -62,7 +64,8 @@ def nodesPMShader():
     nodeGroup.links.new(nodeMixRGB.outputs[0], nodeOutputs.inputs[0])
 
 def nodesShadowCatcher():
-    nodeGroup = bpy.data.node_groups.new('ShadowCatcher', 'ShaderNodeTree')
+    nodeGroup = bpy.data.node_groups.new('[ICOMAKE] NGShadowCatcher', 'ShaderNodeTree')
+    utils.setData(nodeGroup, "icomake_scenedata")
 
     nodeOutputs = nodeGroup.nodes.new('NodeGroupOutput')
 
@@ -94,7 +97,7 @@ def nodesMatModel(material, image):
     nodesCleanMat(material)
     
     # Check for Node Group
-    if not bpy.data.node_groups.get("PmShader"):
+    if not bpy.data.node_groups.get("[ICOMAKE] NGPmShader"):
         nodesPMShader()
         
     print(material.name)
@@ -102,9 +105,9 @@ def nodesMatModel(material, image):
     # Create nodes
     nodeOutput = material.node_tree.nodes.new("ShaderNodeOutputMaterial")
     nodeTexImage = material.node_tree.nodes.new("ShaderNodeTexImage")
-    nodeTexImage.image = bpy.data.images[image]
+    nodeTexImage.image = image
     nodeShader = material.node_tree.nodes.new("ShaderNodeGroup")
-    nodeShader.node_tree = bpy.data.node_groups['PmShader']
+    nodeShader.node_tree = bpy.data.node_groups['[ICOMAKE] NGPmShader']
 
     # Connect our nodes
     material.node_tree.links.new(nodeTexImage.outputs[0], nodeShader.inputs[0])
@@ -126,13 +129,13 @@ def nodesMatShadow(material):
     nodesCleanMat(material)
     
     # Check for Node Group
-    if not bpy.data.node_groups.get("ShadowCatcher"):
+    if not bpy.data.node_groups.get("[ICOMAKE] NGShadowCatcher"):
         nodesShadowCatcher()
     
     # Create nodes
     nodeOutput = material.node_tree.nodes.new("ShaderNodeOutputMaterial")
     nodeShader = material.node_tree.nodes.new("ShaderNodeGroup")
-    nodeShader.node_tree = bpy.data.node_groups['ShadowCatcher']
+    nodeShader.node_tree = bpy.data.node_groups['[ICOMAKE] NGShadowCatcher']
     
     # Link nodes
     material.node_tree.links.new(nodeShader.outputs[0], nodeOutput.inputs[0])
@@ -172,3 +175,12 @@ def nodesCompositing(objectLayer, outlineLayer, shadowLayer, shadows = True):
     compTree.links.new(comp_node_alphaOver1.outputs[0], comp_node_alphaOver2.inputs[2])
     compTree.links.new(layer_node_shadow.outputs[0], comp_node_alphaOver2.inputs[1])
     compTree.links.new(comp_node_alphaOver2.outputs[0], comp_node.inputs[0])
+
+def getNodesByType(node_tree, type):
+    foundNodes = []
+    for node in node_tree.nodes:
+        #print(node.type)
+        if node.type == type:
+            foundNodes.append(node)
+            
+    return foundNodes

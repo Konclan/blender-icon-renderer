@@ -3,30 +3,31 @@ import os.path
 from math import radians
 import mathutils
 
-from .nodes import *
-from .utils import *
+from . import utils, node_utils
 
 def createOutlineObject(object, thickness):
     
     scene = bpy.context.scene
 
     # Copy model
-    selectObject(object)
+    utils.selectObject(object)
     outlineObject = object.copy()
+    utils.setData(outlineObject)
     outlineObject.data = object.data.copy()
     outlineObject.name = object.name + "_outline"
     outlineObject.data.materials.clear()
     scene.collection.objects.link(outlineObject)
     
     #Outline Material
-    outlineMat = bpy.data.materials.new(name="Outline")
+    outlineMat = bpy.data.materials.new(name="[ICOMAKE] Outline")
+    utils.setData(outlineMat)
     outlineMat.use_backface_culling = True
     outlineMat.diffuse_color = (0, 0, 0, 1)
     outlineMat.shadow_method = 'NONE'
-    nodesMatOutline(outlineMat)
+    node_utils.nodesMatOutline(outlineMat)
     outlineObject.data.materials.append(outlineMat)
     
-    selectObject(outlineObject)
+    utils.selectObject(outlineObject)
     bpy.ops.object.editmode_toggle()
     bpy.ops.mesh.select_all(action='SELECT')
     bpy.ops.mesh.flip_normals()
@@ -36,17 +37,19 @@ def createOutlineObject(object, thickness):
     return outlineObject
 
 def createShadowObject(object):
-    selectObject(object)
+    utils.selectObject(object)
     # Place plane for shadows
     bpy.ops.mesh.primitive_plane_add(size=1000, enter_editmode=False, align='WORLD', location=(0, 0, -64.5), scale=(1, 1, 1))
     shadowPlane = bpy.context.active_object
+    utils.setData(shadowPlane)
 
     # Give plane Shadow Catcher material
-    shadowMat = bpy.data.materials.new(name="ShadowCatcher")
+    shadowMat = bpy.data.materials.new(name="[ICOMAKE] Shadow Catcher")
+    utils.setData(shadowMat)
     shadowMat.use_nodes = True
     shadowMat.blend_method = 'BLEND'
     
-    nodesMatShadow(shadowMat)
+    node_utils.nodesMatShadow(shadowMat)
     
     shadowPlane.data.materials.append(shadowMat)
     
@@ -55,11 +58,12 @@ def createShadowObject(object):
     shadowObject.name = object.name + "_shadow"
     shadowObject.data.materials.clear()
     
-    clearMat = bpy.data.materials.new(name="Clear")
+    clearMat = bpy.data.materials.new(name="[ICOMAKE] Clear")
+    utils.setData(clearMat)
     clearMat.use_nodes = True
     clearMat.blend_method = 'CLIP'
     
-    nodesMatClear(clearMat)
+    node_utils.nodesMatClear(clearMat)
     
     shadowObject.data.materials.append(clearMat)
     
@@ -70,7 +74,7 @@ def renderFrames(name):
     scene = bpy.context.scene
 
     # Settings
-    scene.render.filepath = scene.icomake.output_dir + name + ".tga"
+    scene.render.filepath = scene.icomake_props.output_dir + name + ".tga"
     scene.render.resolution_x = 512
     scene.render.resolution_y = 512
     scene.render.image_settings.file_format='TARGA'
@@ -83,19 +87,36 @@ def renderFrames(name):
 
 def makeIcon(pgroup):
     scene = bpy.context.scene
-    model = os.path.join(bpy.path.abspath("//") + pgroup.path, pgroup.name)
+    modelpth = os.path.join(bpy.path.abspath("//") + pgroup.path, pgroup.name)
     type = pgroup.position
     
-    if "smd" in os.path.splitext(model)[1]:
-        object = importSourceModel(model)
-    elif "obj" in os.path.splitext(model)[1]:
-        object = importObj(model)
+    if "smd" in os.path.splitext(modelpth)[1]:
+        object = utils.importSourceModel(modelpth)
+    elif "obj" in os.path.splitext(modelpth)[1]:
+        object = utils.importObj(modelpth)
         object.rotation_euler = ([radians(a) for a in (0.0, 0.0, 90.0)])
     
-    
+    utils.setData(object)
+
+    for material_slot in object.material_slots:
+        material = material_slot.material
+        utils.setData(material)
+        
+        # Get image for material
+        imagepth = os.path.join(os.path.dirname(modelpth), material.name + ".tga")
+        if os.path.exists(imagepth):
+            image = bpy.data.images.load(filepath=imagepth)
+        else:
+            image = bpy.data.images.new(name=material.name + ".tga", width=16, height=16)
+            image.generated_color = (1, 0, 0.5, 1)
+        utils.setData(image)
+
+    node_utils.nodesMatModel(material, image)
+
     # camera and object placement
-    camera_data = bpy.data.cameras.new("Camera")
-    camera = bpy.data.objects.new("Camera", camera_data)
+    camera_data = bpy.data.cameras.new("[ICOMAKE] Camera")
+    camera = bpy.data.objects.new("[ICOMAKE] Camera", camera_data)
+    utils.setData(camera)
     
     # Place cameras
     if type == "FLOOR":
@@ -107,17 +128,20 @@ def makeIcon(pgroup):
     
     camera.data.type = "ORTHO"
     scene.camera = camera
-    selectObject(object)
+    utils.selectObject(object)
     bpy.ops.view3d.camera_to_view_selected()
     camera.data.ortho_scale += 30
     
     collection = object.users_collection[0]
     
-    tempCol = bpy.data.collections.new("Temp Collection")
+    tempCol = bpy.data.collections.new("[ICOMAKE] Object Collection")
+    utils.setData(tempCol)
     scene.collection.children.link(tempCol)
-    tempColOut = bpy.data.collections.new("Temp Collection Outline")
+    tempColOut = bpy.data.collections.new("[ICOMAKE] Outline Collection")
+    utils.setData(tempColOut)
     scene.collection.children.link(tempColOut)
-    tempColSdw = bpy.data.collections.new("Temp Collection Shadow")
+    tempColSdw = bpy.data.collections.new("[ICOMAKE] Shadow Collection")
+    utils.setData(tempColSdw)
     scene.collection.children.link(tempColSdw)
     
     tempCol.objects.link(object)
@@ -152,13 +176,15 @@ def makeIcon(pgroup):
         if not collection.name == tempCol.name:
             collection.exclude = True
     
-    outlineLayer = scene.view_layers.new(name='Outline Layer')
+    outlineLayer = scene.view_layers.new(name='[ICOMAKE] Outline Layer')
+    utils.setData(outlineLayer)
     bpy.context.window.view_layer = outlineLayer
     for collection in bpy.context.layer_collection.children:
         if not collection.name == tempColOut.name:
             collection.exclude = True
     
-    shadowLayer = scene.view_layers.new(name='Shadow Layer')
+    shadowLayer = scene.view_layers.new(name='[ICOMAKE] Shadow Layer')
+    utils.setData(shadowLayer)
     bpy.context.window.view_layer = shadowLayer
     for collection in bpy.context.layer_collection.children:
         if not collection.name == tempColSdw.name:
@@ -167,28 +193,40 @@ def makeIcon(pgroup):
     bpy.context.window.view_layer = objectLayer
 
     # Compositing
-    nodesCompositing(objectLayer, outlineLayer, shadowLayer)
+    node_utils.nodesCompositing(objectLayer, outlineLayer, shadowLayer)
 
     renderFrames(os.path.splitext(pgroup.name)[0])
+
+def setupScene():
+    # Sun
+    sun_data = bpy.data.lights.new("[ICOMAKE] Sun")
+    sun = bpy.data.objects.new("[ICOMAKE] Sun", sun_data)
+    utils.setData(sun, "icomake_scenedata")
+
+    sun.rotation_euler = ([radians(a) for a in (45.0, 0.0, 20.0)])
 
 class IM_MassRender(bpy.types.Operator):
     """Render models and export icons"""
     bl_idname = "icomake.massrender"
     bl_label = "Mass Render Icons"
-    #bl_options = {''}
     
     @classmethod
     def poll(cls, context):
-        return len(context.scene.icomake_imports) > 0 and context.scene.icomake.output_dir != ""
+        return len(context.scene.icomake_imports) > 0 and context.scene.icomake_props.output_dir != ""
     
     def execute(self, context):
         scene = context.scene
 
+        utils.cleanUpData("icomake_scenedata")
+        utils.cleanUpData("icomake_tempdata")
+
+        setupScene
+
         for pgroup in scene.icomake_imports:
-            cleanUpBlend()
             makeIcon(pgroup)
+            utils.cleanUpData("icomake_tempdata")
             
-        #cleanUpBlend()
+        utils.cleanUpData("icomake_scenedata")
             
         
         return {'FINISHED'}

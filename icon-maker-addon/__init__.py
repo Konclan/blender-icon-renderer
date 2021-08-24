@@ -9,15 +9,13 @@ bl_info = {
     "warning": "",
     "doc_url": "",
     "tracker_url": "",
-}        
+}
 
 import bpy
-
+from . import renderer, gui, node_utils, utils
 import importlib
 
-from . import renderer, gui, nodes, utils
-
-for module in [renderer, gui, nodes, utils]:
+for module in [renderer, gui, node_utils, utils]:
     importlib.reload(module)
 
 class IM_SceneProps(bpy.types.PropertyGroup):
@@ -57,42 +55,69 @@ class IM_Imports(bpy.types.PropertyGroup):
         description="Thickness of the object outline",
         default=1,)
 
-class IM_SceneData(bpy.types.PropertyGroup):
-    pass
-
-class IM_TestOp(bpy.types.Operator):
-    """Render models and export icons"""
-    bl_idname = "icomake.test"
-    bl_label = "MI Test Operator"
-    #bl_options = {''}
-    
-    #@classmethod
-    #def poll(cls, context):
-    #    return len(context.scene.icomake_imports) > 0 and context.scene.icomake.output_dir != ""
+class IM_TestOp_Create(bpy.types.Operator):
+    """Test Operator: Create"""
+    bl_idname = "icomake.test_create"
+    bl_label = "MI Test Create"
     
     def execute(self, context):
         scene = context.scene
+
+        bpy.ops.mesh.primitive_cube_add(size=2, enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
+        cube = bpy.context.active_object
+        cube["icomake_data"] = True
+        cube.data["icomake_data"] = True
+
+        material = bpy.data.materials.new(name="Test Mat")
+        material["icomake_data"] = True
+
+        camera_data = bpy.data.cameras.new("Camera")
+        camera = bpy.data.objects.new("Camera", camera_data)
+        camera_data["icomake_data"] = True
+
+        image = bpy.data.images.load(filepath="C:/Users/class/Pictures/flushed-face_1f633.png", check_existing=True)
+        image["icomake_data"] = True
+
+        armature = bpy.data.armatures.new(name="Test Arma")
+        armature["icomake_data"] = True
+
+        collection = bpy.data.collections.new(name="Test Collection")
+        collection["icomake_data"] = True
+
+        view_layer = scene.view_layers.new(name='Test Layer')
+        view_layer["icomake_data"] = True
         
+        return {'FINISHED'}
+
+class IM_TestOp_Remove(bpy.types.Operator):
+    """Test Operator: Remove"""
+    bl_idname = "icomake.test_remove"
+    bl_label = "MI Test Remove"
+    
+    def execute(self, context):
+        scene = context.scene
+
         utils.cleanUpBlend()
         
         return {'FINISHED'}
     
 def menu_func(self, context):
     self.layout.operator(renderer.IM_MassRender.bl_idname)
-    self.layout.operator(IM_TestOp.bl_idname)
+    self.layout.operator(IM_TestOp_Create.bl_idname)
+    self.layout.operator(IM_TestOp_Remove.bl_idname)
 
 _classes = (
     IM_SceneProps,
     IM_Imports,
-    IM_SceneData,
     renderer.IM_MassRender,
     gui.IM_GUI_FL_UL_ImportList,
     gui.IM_GUI_FL_OT_NewItem,
     gui.IM_GUI_FL_OT_DeleteItem,
     gui.IM_GUI_FL_OT_Clear,
     gui.IM_GUI_FL_OT_MoveItem,
-    gui.IM_GUI_PT,
-    IM_TestOp,
+    gui.IM_GUI_PT_MassRender,
+    IM_TestOp_Create,
+    IM_TestOp_Remove,
 )
 
 def register():
@@ -103,9 +128,9 @@ def register():
     for cls in _classes:
         bpy.utils.register_class(cls)
     
-    bpy.types.Scene.icomake = make_pointer(IM_SceneProps, "Icon Maker Settings")
+    bpy.types.Scene.icomake_props = make_pointer(IM_SceneProps, "Icon Maker Settings")
 
-    bpy.types.Scene.icomake_imports = bpy.props.CollectionProperty(type = IM_Imports)
+    bpy.types.Scene.icomake_imports = bpy.props.CollectionProperty(name = "Icon Maker Imports", type = IM_Imports)
     bpy.types.Scene.icomake_imports_index = bpy.props.IntProperty(name = "Icon Maker Import Index",default = 0)
     
     bpy.types.VIEW3D_MT_object.append(menu_func)  # Adds the new operator to an existing menu.
@@ -117,7 +142,7 @@ def unregister():
         
     bpy.types.VIEW3D_MT_object.remove(menu_func)
     
-    del bpy.types.Scene.icomake
+    del bpy.types.Scene.icomake_props
     del bpy.types.Scene.icomake_imports
     del bpy.types.Scene.icomake_imports_index
 

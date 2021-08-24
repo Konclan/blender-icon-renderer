@@ -1,28 +1,60 @@
 import bpy
-import os.path
-from math import radians
-import mathutils
 
-from . import nodes        
-    
-# Cleanup our file of garbage
-def cleanUpBlend():
-    # only worry about data in the startup scene
+def setData(object, data_name = "icomake_tempdata"):
+    object[data_name] = True
+    if "bpy_types.Object" in str(type(object)):
+        object.data[data_name] = True
+
+def getData(data_name):
+    data = []
     for bpy_data_iter in (
-            bpy.data.armatures,
-            bpy.data.materials,
+            bpy.data.objects,
             bpy.data.meshes,
+            bpy.data.lights,
             bpy.data.cameras,
-            bpy.data.collections,
+            bpy.data.materials,
             bpy.data.images,
-            bpy.data.textures,
+            bpy.data.armatures,
+            bpy.data.collections,
     ):
         for id_data in bpy_data_iter:
-            try:
-                if not id_data.use_fake_user:
-                    bpy_data_iter.remove(id_data)
-            except:
-                bpy_data_iter.remove(id_data)
+            if id_data.get(data_name, False):
+                data.append(id_data)
+
+    for scene in bpy.data.scenes:
+        for view_layer in scene.view_layers:
+            if view_layer.get(data_name, False):
+                data.append(view_layer)
+
+    return data
+
+# Cleanup our file of garbage
+def cleanUpData(data_name):
+    for data in getData(data_name):
+        try: 
+            print("Data Type: " + str(type(data)))
+            if "bpy_types.Object" in str(type(data)) and bpy.data.objects.get(data.name):
+                bpy.data.objects.remove(bpy.data.objects[data.name], do_unlink=True)
+            elif "bpy_types.Mesh" in str(type(data)) and bpy.data.meshes.get(data.name):
+                bpy.data.meshes.remove(bpy.data.meshes[data.name], do_unlink=True)
+            elif "bpy.types.Camera" in str(type(data)) and bpy.data.cameras.get(data.name):
+                bpy.data.cameras.remove(bpy.data.cameras[data.name], do_unlink=True)
+            elif "bpy.types.Light" in str(type(data)) and bpy.data.lights.get(data.name):
+                bpy.data.lights.remove(bpy.data.lights[data.name], do_unlink=True)
+            elif "bpy.types.Material" in str(type(data)) and bpy.data.materials.get(data.name):
+                bpy.data.materials.remove(bpy.data.materials[data.name], do_unlink=True)
+            elif "bpy.types.Image" in str(type(data)) and bpy.data.images.get(data.name):
+                bpy.data.images.remove(bpy.data.images[data.name], do_unlink=True)
+            elif "bpy.types.Armature" in str(type(data)) and bpy.data.armatures.get(data.name):
+                bpy.data.armatures.remove(bpy.data.armatures[data.name], do_unlink=True)
+            elif "bpy_types.Collection" in str(type(data)) and bpy.data.collections.get(data.name):
+                bpy.data.collections.remove(bpy.data.collections[data.name], do_unlink=True)
+            elif "bpy.types.ViewLayer" in str(type(data)):
+                for scene in bpy.data.scenes:
+                    if scene.view_layers.get(data.name):
+                        scene.view_layers.remove(data)
+        except Exception as e:
+            print(e)
 
 def appendObject(object, type, file):
     
@@ -32,15 +64,6 @@ def appendObject(object, type, file):
         filepath=directory + object, 
         filename=object,
         directory=directory)
-
-def getNodesByType(node_tree, type):
-    foundNodes = []
-    for node in node_tree.nodes:
-        #print(node.type)
-        if node.type == type:
-            foundNodes.append(node)
-            
-    return foundNodes
 
 def deselectAll():
     for obj in bpy.data.objects:
@@ -53,31 +76,12 @@ def selectObject(object):
     object.select_set(True)
 
 def importObj(path):
-    name = os.path.basename(path)
-    folder = os.path.dirname(path)
-    
     bpy.ops.import_scene.obj(filepath=path, use_edges=True, use_smooth_groups=True, use_split_objects=True, use_split_groups=False, use_groups_as_vgroups=False, use_image_search=True, split_mode='ON', global_clamp_size=0.0, axis_forward='-X', axis_up='Z')
     object = bpy.context.selected_objects[0]
     
-    selectObject(object)
-    
-    for material_slot in object.material_slots:
-        
-        material = material_slot.material
-        
-        # Get image for material
-        image = material.name + ".tga"
-        
-        #ToDo: Handle missing image
-        bpy.ops.image.open(filepath=os.path.join(folder, image))
-        
-        nodes.nodesMatModel(material, image)
-    
     return object
     
-def importSourceModel(path):
-    name = os.path.basename(path)
-    folder = os.path.dirname(path)
+def importSourceModel(path):   
     
     bpy.ops.import_scene.smd(filepath=path, append="NEW_ARMATURE")
     
@@ -93,16 +97,5 @@ def importSourceModel(path):
     objs = bpy.data.objects
     objs.remove(objs[object.parent.name], do_unlink=True)
     bpy.data.meshes.remove(bpy.data.meshes["smd_bone_vis"])
-    
-    # Materials
-    for material_slot in object.material_slots:
-        
-        material = material_slot.material
-        
-        # Get image for material
-        image = material.name + ".tga"
-        bpy.ops.image.open(filepath=os.path.join(folder, image))
-        
-        nodes.nodesMatModel(material, image)
     
     return object
