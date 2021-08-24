@@ -1,19 +1,12 @@
 import bpy
 
-from . import utils
-
 def nodesCleanMat(material):
     material.use_nodes = True
     
     for node in material.node_tree.nodes:
         material.node_tree.nodes.remove(node)
         
-def nodesPMShader():
-    #if not bpy.data.node_groups.get("PM Shader"):
-    
-    # ToDo: Convert this to scripted node group
-    #utils.appendObject("PM Shader", "\\NodeTree\\", bpy.path.abspath("//noderef.blend"))
-    
+def nodesPMShader():    
     nodeGroup = bpy.data.node_groups.new('PmShader', 'ShaderNodeTree')
 
     nodeInputs = nodeGroup.nodes.new('NodeGroupInput')
@@ -69,11 +62,6 @@ def nodesPMShader():
     nodeGroup.links.new(nodeMixRGB.outputs[0], nodeOutputs.inputs[0])
 
 def nodesShadowCatcher():
-    #if not bpy.data.node_groups.get("ShadowCatcher"):
-
-    # ToDo: Convert this to scripted node group
-    #utils.appendObject("ShadowCatcher", "\\NodeTree\\", bpy.path.abspath("//noderef.blend"))
-
     nodeGroup = bpy.data.node_groups.new('ShadowCatcher', 'ShaderNodeTree')
 
     nodeOutputs = nodeGroup.nodes.new('NodeGroupOutput')
@@ -91,6 +79,8 @@ def nodesShadowCatcher():
     nodeColorRamp.color_ramp.elements[1].color = (0, 0, 0, 1)
 
     nodeMixShader = nodeGroup.nodes.new('ShaderNodeMixShader')
+
+    # Connections
 
     nodeGroup.links.new(nodeBsdfDiffuse1.outputs[0], nodeShaderRGB.inputs[0])
     nodeGroup.links.new(nodeShaderRGB.outputs[0], nodeColorRamp.inputs[0])

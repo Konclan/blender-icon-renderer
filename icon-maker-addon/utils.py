@@ -67,6 +67,8 @@ def importObj(path):
         
         # Get image for material
         image = material.name + ".tga"
+        
+        #ToDo: Handle missing image
         bpy.ops.image.open(filepath=os.path.join(folder, image))
         
         nodes.nodesMatModel(material, image)

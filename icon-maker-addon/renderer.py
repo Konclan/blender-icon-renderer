@@ -8,13 +8,15 @@ from .utils import *
 
 def createOutlineObject(object, thickness):
     
+    scene = bpy.context.scene
+
     # Copy model
     selectObject(object)
     outlineObject = object.copy()
     outlineObject.data = object.data.copy()
     outlineObject.name = object.name + "_outline"
     outlineObject.data.materials.clear()
-    bpy.context.scene.collection.objects.link(outlineObject)
+    scene.collection.objects.link(outlineObject)
     
     #Outline Material
     outlineMat = bpy.data.materials.new(name="Outline")
@@ -65,20 +67,24 @@ def createShadowObject(object):
 
 def renderFrames(name):
     
+    scene = bpy.context.scene
+
     # Settings
-    bpy.context.scene.render.filepath = bpy.context.scene.bri.output_dir + name + ".tga"
-    bpy.context.scene.render.resolution_x = 512
-    bpy.context.scene.render.resolution_y = 512
-    bpy.context.scene.render.image_settings.file_format='TARGA'
-    bpy.context.scene.render.film_transparent = True
-    bpy.context.scene.view_settings.view_transform = 'Standard'
+    scene.render.filepath = scene.icomake.output_dir + name + ".tga"
+    scene.render.resolution_x = 512
+    scene.render.resolution_y = 512
+    scene.render.image_settings.file_format='TARGA'
+    scene.render.film_transparent = True
+    scene.view_settings.view_transform = 'Standard'
     
     bpy.ops.render.render(write_still = True)
 
 # Call Functions
 
-def renderIcon(pgroup):
+def makeIcon(pgroup):
+    scene = bpy.context.scene
     model = os.path.join(bpy.path.abspath("//") + pgroup.path, pgroup.name)
+    type = pgroup.position
     
     if "smd" in os.path.splitext(model)[1]:
         object = importSourceModel(model)
@@ -86,8 +92,6 @@ def renderIcon(pgroup):
         object = importObj(model)
         object.rotation_euler = ([radians(a) for a in (0.0, 0.0, 90.0)])
     
-    scene = bpy.context.scene
-    type = pgroup.position
     
     # camera and object placement
     camera_data = bpy.data.cameras.new("Camera")
@@ -99,11 +103,10 @@ def renderIcon(pgroup):
     elif type == "WALL":
         camera.rotation_euler = ([radians(a) for a in (330.0, 330.0, 180.0)])
     elif type == "CEIL":
-        camera.rotation_euler = ([radians(a) for a in (60.0, 0.0, 330.0)])
-        object.rotation_euler[0] = radians(180)
+        camera.rotation_euler = ([radians(a) for a in (60.0, 180.0, 390.0)])
     
     camera.data.type = "ORTHO"
-    bpy.context.scene.camera = camera
+    scene.camera = camera
     selectObject(object)
     bpy.ops.view3d.camera_to_view_selected()
     camera.data.ortho_scale += 30
@@ -111,18 +114,18 @@ def renderIcon(pgroup):
     collection = object.users_collection[0]
     
     tempCol = bpy.data.collections.new("Temp Collection")
-    bpy.context.scene.collection.children.link(tempCol)
+    scene.collection.children.link(tempCol)
     tempColOut = bpy.data.collections.new("Temp Collection Outline")
-    bpy.context.scene.collection.children.link(tempColOut)
+    scene.collection.children.link(tempColOut)
     tempColSdw = bpy.data.collections.new("Temp Collection Shadow")
-    bpy.context.scene.collection.children.link(tempColSdw)
+    scene.collection.children.link(tempColSdw)
     
     tempCol.objects.link(object)
     tempCol.objects.link(camera)
     
     # Create extra objects for rendering
     outlineObject = createOutlineObject(object, pgroup.outline)
-    bpy.context.scene.collection.objects.unlink(outlineObject)
+    scene.collection.objects.unlink(outlineObject)
     tempColOut.objects.link(outlineObject)
     
     if not type == "CEIL":
@@ -149,13 +152,13 @@ def renderIcon(pgroup):
         if not collection.name == tempCol.name:
             collection.exclude = True
     
-    outlineLayer = bpy.context.scene.view_layers.new(name='Outline Layer')
+    outlineLayer = scene.view_layers.new(name='Outline Layer')
     bpy.context.window.view_layer = outlineLayer
     for collection in bpy.context.layer_collection.children:
         if not collection.name == tempColOut.name:
             collection.exclude = True
     
-    shadowLayer = bpy.context.scene.view_layers.new(name='Shadow Layer')
+    shadowLayer = scene.view_layers.new(name='Shadow Layer')
     bpy.context.window.view_layer = shadowLayer
     for collection in bpy.context.layer_collection.children:
         if not collection.name == tempColSdw.name:
@@ -168,22 +171,22 @@ def renderIcon(pgroup):
 
     renderFrames(os.path.splitext(pgroup.name)[0])
 
-class BEERenderIcons(bpy.types.Operator):
+class IM_MassRender(bpy.types.Operator):
     """Render models and export icons"""
-    bl_idname = "bri.render"
-    bl_label = "BEE Render Icons"
+    bl_idname = "icomake.massrender"
+    bl_label = "Mass Render Icons"
     #bl_options = {''}
     
     @classmethod
     def poll(cls, context):
-        return len(context.scene.bri_imports) > 0 and context.scene.bri.output_dir != ""
+        return len(context.scene.icomake_imports) > 0 and context.scene.icomake.output_dir != ""
     
     def execute(self, context):
         scene = context.scene
 
-        for pgroup in scene.bri_imports:
+        for pgroup in scene.icomake_imports:
             cleanUpBlend()
-            renderIcon(pgroup)
+            makeIcon(pgroup)
             
         #cleanUpBlend()
             
