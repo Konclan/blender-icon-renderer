@@ -38,7 +38,7 @@ class IM_GUI_FL_OT_NewItem(bpy.types.Operator):
         directory = self.directory
         
         for file_elem in self.files:
-            file = context.scene.icomake_imports.add()
+            file = context.scene.icomake_rendermass_imports.add()
             file.name = file_elem.name
             file.path = os.path.relpath(directory, bpy.path.abspath("//"))
         return {'FINISHED'}
@@ -59,14 +59,14 @@ class IM_GUI_FL_OT_DeleteItem(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.icomake_imports
+        return context.scene.icomake_rendermass_imports
 
     def execute(self, context):
-        filelist = context.scene.icomake_imports
-        index = context.scene.icomake_imports_index
+        filelist = context.scene.icomake_rendermass_imports
+        index = context.scene.icomake_rendermass_imports_index
 
         filelist.remove(index)
-        context.scene.icomake_imports_index = min(max(0, index - 1), len(filelist) - 1)
+        context.scene.icomake_rendermass_imports_index = min(max(0, index - 1), len(filelist) - 1)
 
         return{'FINISHED'}
 
@@ -78,11 +78,11 @@ class IM_GUI_FL_OT_Clear(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.icomake_imports
+        return context.scene.icomake_rendermass_imports
 
     def execute(self, context):        
-        context.scene.icomake_imports.clear()
-        context.scene.icomake_imports_index = 0
+        context.scene.icomake_rendermass_imports.clear()
+        context.scene.icomake_rendermass_imports_index = 0
 
         return{'FINISHED'}
 
@@ -98,20 +98,20 @@ class IM_GUI_FL_OT_MoveItem(bpy.types.Operator):
 
     @classmethod
     def poll(cls, context):
-        return context.scene.icomake_imports
+        return context.scene.icomake_rendermass_imports
 
     def move_index(self):
         """ Move index of an item render queue while clamping it. """
 
-        index = bpy.context.scene.icomake_imports_index
-        list_length = len(bpy.context.scene.icomake_imports) - 1  # (index starts at 0)
+        index = bpy.context.scene.icomake_rendermass_imports_index
+        list_length = len(bpy.context.scene.icomake_rendermass_imports) - 1  # (index starts at 0)
         new_index = index + (-1 if self.direction == 'UP' else 1)
 
-        bpy.context.scene.icomake_imports_index = max(0, min(new_index, list_length))
+        bpy.context.scene.icomake_rendermass_imports_index = max(0, min(new_index, list_length))
 
     def execute(self, context):
-        filelist = context.scene.icomake_imports
-        index = context.scene.icomake_imports_index
+        filelist = context.scene.icomake_rendermass_imports
+        index = context.scene.icomake_rendermass_imports_index
 
         neighbor = index + (-1 if self.direction == 'UP' else 1)
         filelist.move(neighbor, index)
@@ -120,11 +120,11 @@ class IM_GUI_FL_OT_MoveItem(bpy.types.Operator):
         return{'FINISHED'}
 
 
-class IM_GUI_PT_MassRender(bpy.types.Panel):
+class IM_GUI_PT_RenderMass(bpy.types.Panel):
     """Icon Maker Mass Render Panel."""
 
     bl_label = "Icons Maker Mass Render"
-    bl_idname = "SCENE_PT_ICOMAKE_GUI_MASSRENDER"
+    bl_idname = "SCENE_PT_ICOMAKE_GUI_RENDERMASS"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "scene"
@@ -133,9 +133,10 @@ class IM_GUI_PT_MassRender(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
 
+        layout.label(text="Model List:")
         row = layout.row()
         row.template_list("IM_GUI_FL_UL_ImportList", "ICOMAKE_GUI_FL", scene,
-                          "icomake_imports", scene, "icomake_imports_index")
+                          "icomake_rendermass_imports", scene, "icomake_rendermass_imports_index")
 
         row = layout.row()
         row.operator('icomake_gui_fl.new_item', text='ADD')
@@ -144,8 +145,8 @@ class IM_GUI_PT_MassRender(bpy.types.Panel):
         row.operator('icomake_gui_fl.move_item', text='MOVE DOWN').direction = 'DOWN'
         row.operator('icomake_gui_fl.clear', text='CLEAR')
 
-        if scene.icomake_imports_index >= 0 and scene.icomake_imports:
-            item = scene.icomake_imports[scene.icomake_imports_index]
+        if scene.icomake_rendermass_imports_index >= 0 and scene.icomake_rendermass_imports:
+            item = scene.icomake_rendermass_imports[scene.icomake_rendermass_imports_index]
 
             row = layout.row()
             row.prop(item, "name")
@@ -155,14 +156,48 @@ class IM_GUI_PT_MassRender(bpy.types.Panel):
             row.prop(item, "position")
             row.prop(item, "outline")
         
+        layout.label(text="Options:")
         row = layout.row()
-        row.prop(scene.icomake_props, "output_dir")
+        row.prop(scene.icomake_props, "rendermass_output")
         
-        # Big render button
-        layout.label(text="Big Button:")
+        layout.label(text="Operators:")
         row = layout.row()
-        row.scale_y = 3.0
-        row.operator("icomake.massrender")
+        row.scale_y = 2.0
+        row.operator("icomake.rendermass")
+
+class IM_GUI_PT_RenderSelected(bpy.types.Panel):
+    """Icon Maker Render Selected Panel."""
+
+    bl_label = "Icons Maker Render Selected"
+    bl_idname = "SCENE_PT_ICOMAKE_GUI_RENDERSELECTED"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "scene"
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+
+        layout.label(text="Options:")
+        row = layout.row()
+        row.prop(scene.icomake_props, "renderselected_position")
+        row.prop(scene.icomake_props, "renderselected_outline")
+
+        row = layout.row()
+        row.prop(scene.icomake_props, "renderselected_output")
+
+        layout.label(text="Operators:")
+        row = layout.row()
+        row.scale_y = 2.0
+        row.operator("icomake.materialselected")
+
+        row = layout.row()
+        row.scale_y = 2.0
+        row.operator("icomake.renderselected")
+
+        row = layout.row()
+        row.scale_y = 2.0
+        row.operator("icomake.cleanup")
 
 #class IM_GUI_FL_UL_DataList(bpy.types.UIList):
 #    """IM_GUI Data List."""

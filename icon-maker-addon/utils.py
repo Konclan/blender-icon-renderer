@@ -1,8 +1,12 @@
 import bpy
 
 def setData(object, data_name = "icomake_tempdata"):
+    print("Data Name = " + data_name)
+    print("Object = " + object.name)
+    print("Object Type = " + str(type(object)))
     object[data_name] = True
     if "bpy_types.Object" in str(type(object)):
+        print("Object Data = " + object.data.name)
         object.data[data_name] = True
 
 def getData(data_name):
@@ -39,7 +43,7 @@ def cleanUpData(data_name):
                 bpy.data.meshes.remove(bpy.data.meshes[data.name], do_unlink=True)
             elif "bpy.types.Camera" in str(type(data)) and bpy.data.cameras.get(data.name):
                 bpy.data.cameras.remove(bpy.data.cameras[data.name], do_unlink=True)
-            elif "bpy.types.Light" in str(type(data)) and bpy.data.lights.get(data.name):
+            elif "bpy.types.SunLight" in str(type(data)) and bpy.data.lights.get(data.name):
                 bpy.data.lights.remove(bpy.data.lights[data.name], do_unlink=True)
             elif "bpy.types.Material" in str(type(data)) and bpy.data.materials.get(data.name):
                 bpy.data.materials.remove(bpy.data.materials[data.name], do_unlink=True)

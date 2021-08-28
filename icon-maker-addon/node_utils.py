@@ -9,7 +9,7 @@ def nodesCleanMat(material):
         
 def nodesPMShader():    
     nodeGroup = bpy.data.node_groups.new('[ICOMAKE] NGPmShader', 'ShaderNodeTree')
-    utils.setData(nodeGroup, "icomake_scenedata")
+    utils.setData(nodeGroup, "icomake_nodedata")
 
     nodeInputs = nodeGroup.nodes.new('NodeGroupInput')
     nodeOutputs = nodeGroup.nodes.new('NodeGroupOutput')
@@ -65,7 +65,7 @@ def nodesPMShader():
 
 def nodesShadowCatcher():
     nodeGroup = bpy.data.node_groups.new('[ICOMAKE] NGShadowCatcher', 'ShaderNodeTree')
-    utils.setData(nodeGroup, "icomake_scenedata")
+    utils.setData(nodeGroup, "icomake_nodedata")
 
     nodeOutputs = nodeGroup.nodes.new('NodeGroupOutput')
 
