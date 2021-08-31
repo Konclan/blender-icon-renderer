@@ -317,8 +317,15 @@ class IM_MaterialSelected(bpy.types.Operator):
             material = material_slot.material
             
             # Make temp image for material
-            image = bpy.data.images.new(name=material.name + "_temp", width=16, height=16)
-            image.generated_color = (1, 0, 0.5, 1)
+            if not material.use_nodes == True:
+                material.use_nodes = True
+            
+            imageNodes = node_utils.getNodesByType(material.node_tree, "TEX_IMAGE")
+            if len(imageNodes) > 0:
+                image = imageNodes[0].image
+            else:
+                image = bpy.data.images.new(name=material.name + "_temp", width=16, height=16)
+                image.generated_color = (1, 0, 0.5, 1)
 
             node_utils.nodesMatModel(material, image)
         
