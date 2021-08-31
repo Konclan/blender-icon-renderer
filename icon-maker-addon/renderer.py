@@ -102,6 +102,9 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
         camera.rotation_euler = ([radians(a) for a in (330.0, 330.0, 180.0)])
     elif pos == "CEIL":
         camera.rotation_euler = ([radians(a) for a in (60.0, 180.0, 390.0)])
+
+    scene.render.resolution_x = 512
+    scene.render.resolution_y = 512
     
     camera.data.type = "ORTHO"
     scene.camera = camera
