@@ -30,7 +30,7 @@ class IM_SceneProps(bpy.types.PropertyGroup):
     renderselected_output: bpy.props.StringProperty(
         name="Render Directory",
         description="Directory renders are saved to",
-        default="",
+        default="//",
         subtype='DIR_PATH')
 
     renderselected_position: bpy.props.EnumProperty(
@@ -47,7 +47,7 @@ class IM_SceneProps(bpy.types.PropertyGroup):
     rendermass_output: bpy.props.StringProperty(
         name="Render Directory",
         description="Directory renders are saved to",
-        default="",
+        default="//",
         subtype='DIR_PATH')
 
 class IM_Imports(bpy.types.PropertyGroup):

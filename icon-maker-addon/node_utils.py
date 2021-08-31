@@ -100,7 +100,7 @@ def nodesMatModel(material, image):
     if not bpy.data.node_groups.get("[ICOMAKE] NGPmShader"):
         nodesPMShader()
         
-    print(material.name)
+    #print(material.name)
 
     # Create nodes
     nodeOutput = material.node_tree.nodes.new("ShaderNodeOutputMaterial")

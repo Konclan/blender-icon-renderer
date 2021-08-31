@@ -112,20 +112,28 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
     bpy.ops.view3d.camera_to_view_selected()
     camera.data.ortho_scale += 30
     
-    collection = object.users_collection[0]
+    objcol = object.users_collection[0]
     
-    tempCol = bpy.data.collections.new("[ICOMAKE] Object Collection")
-    utils.setData(tempCol)
-    scene.collection.children.link(tempCol)
+    if objcol == scene.collection:
+        #print("!!! Scene Collection")
+        tempCol = bpy.data.collections.new("[ICOMAKE] Object Collection")
+        utils.setData(tempCol)
+        scene.collection.children.link(tempCol)
+        tempCol.objects.link(object)
+    else:
+        #print("!!! User Collection")
+        tempCol = objcol
+
+    tempCol.objects.link(camera)
+
     tempColOut = bpy.data.collections.new("[ICOMAKE] Outline Collection")
     utils.setData(tempColOut)
     scene.collection.children.link(tempColOut)
+
     tempColSdw = bpy.data.collections.new("[ICOMAKE] Shadow Collection")
     utils.setData(tempColSdw)
     scene.collection.children.link(tempColSdw)
     
-    tempCol.objects.link(object)
-    tempCol.objects.link(camera)
     
     # Create extra objects for rendering
     if not outline == 0:
@@ -148,28 +156,28 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
     vec_rot = vec @ inv
     camera.location = camera.location + vec_rot
     
-    bpy.data.collections.remove(collection)
+    #bpy.data.collections.remove(objcol)
     
     # RENDER!
     objectLayer = bpy.context.view_layer
     bpy.context.window.view_layer = bpy.context.view_layer
-    for collection in bpy.context.layer_collection.children:
-        if not collection.name == tempCol.name:
-            collection.exclude = True
+    for col in bpy.context.layer_collection.children:
+        if not col.name == tempCol.name:
+            col.exclude = True
     
     outlineLayer = scene.view_layers.new(name='[ICOMAKE] Outline Layer')
     utils.setData(outlineLayer)
     bpy.context.window.view_layer = outlineLayer
-    for collection in bpy.context.layer_collection.children:
-        if not collection.name == tempColOut.name:
-            collection.exclude = True
+    for col in bpy.context.layer_collection.children:
+        if not col.name == tempColOut.name:
+            col.exclude = True
     
     shadowLayer = scene.view_layers.new(name='[ICOMAKE] Shadow Layer')
     utils.setData(shadowLayer)
     bpy.context.window.view_layer = shadowLayer
-    for collection in bpy.context.layer_collection.children:
-        if not collection.name == tempColSdw.name:
-            collection.exclude = True
+    for col in bpy.context.layer_collection.children:
+        if not col.name == tempColSdw.name:
+            col.exclude = True
     
     bpy.context.window.view_layer = objectLayer
 
@@ -270,7 +278,7 @@ class IM_RenderSelected(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
 
-        print("Active Object = " + context.active_object.name)
+        #print("Active Object = " + context.active_object.name)
         object = context.active_object
 
         utils.cleanUpData("icomake_scenedata")
@@ -286,7 +294,7 @@ class IM_RenderSelected(bpy.types.Operator):
         utils.cleanUpData("icomake_scenedata")
         utils.cleanUpData("icomake_tempdata")
 
-        if not scene.collection.objects.get(object.name):
+        if not len(object.users_collection) > 0 and scene.collection.objects.get(object.name):
             scene.collection.objects.link(object)
         
         return {'FINISHED'}
