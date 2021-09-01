@@ -85,26 +85,6 @@ def renderFrame(output):
     
     bpy.ops.render.render(write_still = True)
 
-def get_parent_collection_names(collection, parent_collections):
-    for parent_collection in bpy.data.collections:
-        if collection.name in parent_collection.children.keys():
-            parent_collections.append(parent_collection.name)
-            get_parent_collection_names(parent_collection, parent_collections)
-            return
-
-def include_only_one_collection(view_layer: bpy.types.ViewLayer, collection_include: bpy.types.Collection):
-    parent_collections = []
-    parent_collections.append(collection_include.name)
-    get_parent_collection_names(collection_include, parent_collections)
-    #print("!!!Collections:")
-    #for col in parent_collections:
-    #    print(col)
-    for layer_collection in view_layer.layer_collection.children:
-        if not layer_collection.collection.name in parent_collections:
-            layer_collection.exclude = True
-        else:
-            layer_collection.exclude = False
-
 # Call Functions
 
 def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
@@ -182,17 +162,17 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
     objectLayer = scene.view_layers.new(name='[ICOMAKE] Object Layer')
     utils.setData(objectLayer)
     bpy.context.window.view_layer = objectLayer
-    include_only_one_collection(objectLayer, tempCol)
+    utils.include_only_one_collection(objectLayer, tempCol)
     
     outlineLayer = scene.view_layers.new(name='[ICOMAKE] Outline Layer')
     utils.setData(outlineLayer)
     bpy.context.window.view_layer = outlineLayer
-    include_only_one_collection(outlineLayer, tempColOut)
+    utils.include_only_one_collection(outlineLayer, tempColOut)
     
     shadowLayer = scene.view_layers.new(name='[ICOMAKE] Shadow Layer')
     utils.setData(shadowLayer)
     bpy.context.window.view_layer = shadowLayer
-    include_only_one_collection(shadowLayer, tempColSdw)
+    utils.include_only_one_collection(shadowLayer, tempColSdw)
     
     bpy.context.window.view_layer = objectLayer
 
@@ -225,8 +205,14 @@ def setupScene():
 
 def RenderMass(pgroup):
     scene = bpy.context.scene
+
+    if os.path.isabs(pgroup.path):
+        modelpth = os.path.abspath(os.path.join(pgroup.path, pgroup.name))
+    else:
+        modelpth = os.path.join(bpy.path.abspath("//") + pgroup.path, pgroup.name)
     
-    modelpth = os.path.join(bpy.path.abspath("//") + pgroup.path, pgroup.name)
+    print(modelpth)
+    
     pos = pgroup.position
 
     if "smd" in os.path.splitext(modelpth)[1]:
@@ -234,6 +220,8 @@ def RenderMass(pgroup):
     elif "obj" in os.path.splitext(modelpth)[1]:
         object = utils.importObj(modelpth)
         object.rotation_euler = ([radians(a) for a in (0.0, 0.0, 90.0)])
+    else:  
+        raise TypeError("model path [" + modelpth + "] doesn't exist or is not a valid model path.")
 
     utils.setData(object)
 
@@ -251,6 +239,10 @@ def RenderMass(pgroup):
         utils.setData(image)
 
         node_utils.nodesMatModel(material, image)
+
+    #Uniquify looping forever!
+    #render_path = scene.icomake_props.rendermass_output + os.path.splitext(pgroup.name)[0] + ".tga"
+    #render_output = utils.uniquify(render_path)
 
     render_output = scene.icomake_props.rendermass_output + os.path.splitext(pgroup.name)[0] + ".tga"
 
@@ -274,10 +266,11 @@ class IM_RenderMass(bpy.types.Operator):
         setupScene()
 
         for pgroup in scene.icomake_rendermass_imports:
-            RenderMass(pgroup)
             utils.cleanUpData("icomake_tempdata")
+            RenderMass(pgroup)
             
         utils.cleanUpData("icomake_scenedata")
+        utils.cleanUpData("icomake_tempdata")
         
         return {'FINISHED'}
 

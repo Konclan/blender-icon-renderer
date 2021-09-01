@@ -40,7 +40,10 @@ class IM_GUI_FL_OT_NewItem(bpy.types.Operator):
         for file_elem in self.files:
             file = context.scene.icomake_rendermass_imports.add()
             file.name = file_elem.name
-            file.path = os.path.relpath(directory, bpy.path.abspath("//"))
+            if os.path.isabs(directory):
+                file.path = os.path.abspath(directory)
+            else:
+                file.path = os.path.relpath(directory, bpy.path.abspath("//"))
         return {'FINISHED'}
 
     def invoke(self, context, event):
