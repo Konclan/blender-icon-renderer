@@ -85,6 +85,26 @@ def renderFrame(output):
     
     bpy.ops.render.render(write_still = True)
 
+def get_parent_collection_names(collection, parent_collections):
+    for parent_collection in bpy.data.collections:
+        if collection.name in parent_collection.children.keys():
+            parent_collections.append(parent_collection.name)
+            get_parent_collection_names(parent_collection, parent_collections)
+            return
+
+def include_only_one_collection(view_layer: bpy.types.ViewLayer, collection_include: bpy.types.Collection):
+    parent_collections = []
+    parent_collections.append(collection_include.name)
+    get_parent_collection_names(collection_include, parent_collections)
+    #print("!!!Collections:")
+    #for col in parent_collections:
+    #    print(col)
+    for layer_collection in view_layer.layer_collection.children:
+        if not layer_collection.collection.name in parent_collections:
+            layer_collection.exclude = True
+        else:
+            layer_collection.exclude = False
+
 # Call Functions
 
 def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
@@ -159,25 +179,20 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
     #bpy.data.collections.remove(objcol)
     
     # RENDER!
-    objectLayer = bpy.context.view_layer
-    bpy.context.window.view_layer = bpy.context.view_layer
-    for col in bpy.context.layer_collection.children:
-        if not col.name == tempCol.name:
-            col.exclude = True
+    objectLayer = scene.view_layers.new(name='[ICOMAKE] Object Layer')
+    utils.setData(objectLayer)
+    bpy.context.window.view_layer = objectLayer
+    include_only_one_collection(objectLayer, tempCol)
     
     outlineLayer = scene.view_layers.new(name='[ICOMAKE] Outline Layer')
     utils.setData(outlineLayer)
     bpy.context.window.view_layer = outlineLayer
-    for col in bpy.context.layer_collection.children:
-        if not col.name == tempColOut.name:
-            col.exclude = True
+    include_only_one_collection(outlineLayer, tempColOut)
     
     shadowLayer = scene.view_layers.new(name='[ICOMAKE] Shadow Layer')
     utils.setData(shadowLayer)
     bpy.context.window.view_layer = shadowLayer
-    for col in bpy.context.layer_collection.children:
-        if not col.name == tempColSdw.name:
-            col.exclude = True
+    include_only_one_collection(shadowLayer, tempColSdw)
     
     bpy.context.window.view_layer = objectLayer
 
