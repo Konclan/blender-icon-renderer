@@ -58,16 +58,17 @@ def createShadowObject(object):
     shadowObject.data = object.data.copy()
     utils.setData(shadowObject)
     shadowObject.name = object.name + "_shadow"
-    shadowObject.data.materials.clear()
+    shadowObject.is_holdout = True
+#    shadowObject.data.materials.clear()
     
-    clearMat = bpy.data.materials.new(name="[ICOMAKE] Clear")
-    utils.setData(clearMat)
-    clearMat.use_nodes = True
-    clearMat.blend_method = 'CLIP'
+#    clearMat = bpy.data.materials.new(name="[ICOMAKE] Clear")
+#    utils.setData(clearMat)
+#    clearMat.use_nodes = True
+#    clearMat.blend_method = 'CLIP'
     
-    node_utils.nodesMatClear(clearMat)
+#    node_utils.nodesMatClear(clearMat)
     
-    shadowObject.data.materials.append(clearMat)
+#    shadowObject.data.materials.append(clearMat)
     
     return shadowPlane, shadowObject
 
@@ -124,7 +125,9 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
         #print("!!! User Collection")
         tempCol = objcol
 
-    tempCol.objects.link(camera)
+#    tempCol.objects.link(camera)
+    if not scene.collection.objects.get(camera.name):
+        scene.collection.objects.link(camera)
 
     tempColOut = bpy.data.collections.new("[ICOMAKE] Outline Collection")
     utils.setData(tempColOut)
@@ -196,7 +199,7 @@ def setupScene():
     sun.data.volume_factor = 1
     sun.data.angle = 0
 
-    sun.data.shadow_buffer_bias = 0.002
+#    sun.data.shadow_buffer_bias = 0.002
 
     sun.rotation_euler = ([radians(a) for a in (45.0, 0.0, 20.0)])
 
