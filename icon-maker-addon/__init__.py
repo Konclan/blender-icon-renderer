@@ -1,8 +1,8 @@
 bl_info = {
 	"name": "Icon Maker",
 	"author": "Konclan",
-	"version": (1, 0, 0),
-	"blender": (2, 93, 0),
+	"version": (2, 0, 0),
+	"blender": (4, 3, 2),
 	"category": "Render",
 	"location": "Scene properties",
 	"description": "Item icon rendering tool for BEEmod",
