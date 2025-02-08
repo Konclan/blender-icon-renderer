@@ -206,76 +206,76 @@ def setupScene():
     if not scene.collection.objects.get(sun.name):
         scene.collection.objects.link(sun)
 
-def RenderMass(pgroup):
-    scene = bpy.context.scene
+#def RenderMass(pgroup):
+#    scene = bpy.context.scene
 
-    if os.path.isabs(pgroup.path):
-        modelpth = os.path.abspath(os.path.join(pgroup.path, pgroup.name))
-    else:
-        modelpth = os.path.join(bpy.path.abspath("//") + pgroup.path, pgroup.name)
-    
-    print(modelpth)
-    
-    pos = pgroup.position
+#    if os.path.isabs(pgroup.path):
+#        modelpth = os.path.abspath(os.path.join(pgroup.path, pgroup.name))
+#    else:
+#        modelpth = os.path.join(bpy.path.abspath("//") + pgroup.path, pgroup.name)
+#    
+#    print(modelpth)
+#    
+#    pos = pgroup.position
 
-    if "smd" in os.path.splitext(modelpth)[1]:
-        object = utils.importSourceModel(modelpth)
-    elif "obj" in os.path.splitext(modelpth)[1]:
-        object = utils.importObj(modelpth)
-        object.rotation_euler = ([radians(a) for a in (0.0, 0.0, 90.0)])
-    else:  
-        raise TypeError("model path [" + modelpth + "] doesn't exist or is not a valid model path.")
+#    if "smd" in os.path.splitext(modelpth)[1]:
+#        object = utils.importSourceModel(modelpth)
+#    elif "obj" in os.path.splitext(modelpth)[1]:
+#        object = utils.importObj(modelpth)
+#        object.rotation_euler = ([radians(a) for a in (0.0, 0.0, 90.0)])
+#    else:  
+#        raise TypeError("model path [" + modelpth + "] doesn't exist or is not a valid model path.")
 
-    utils.setData(object)
+#    utils.setData(object)
 
-    for material_slot in object.material_slots:
-        material = material_slot.material
-        utils.setData(material)
-        
-        # Get image for material
-        imagepth = os.path.join(os.path.dirname(modelpth), material.name + ".tga")
-        if os.path.exists(imagepth):
-            image = bpy.data.images.load(filepath=imagepth)
-        else:
-            image = bpy.data.images.new(name=material.name + "_temp", width=16, height=16)
-            image.generated_color = (1, 0, 0.5, 1)
-        utils.setData(image)
+#    for material_slot in object.material_slots:
+#        material = material_slot.material
+#        utils.setData(material)
+#        
+#        # Get image for material
+#        imagepth = os.path.join(os.path.dirname(modelpth), material.name + ".tga")
+#        if os.path.exists(imagepth):
+#            image = bpy.data.images.load(filepath=imagepth)
+#        else:
+#            image = bpy.data.images.new(name=material.name + "_temp", width=16, height=16)
+#            image.generated_color = (1, 0, 0.5, 1)
+#        utils.setData(image)
 
-        node_utils.nodesMatModel(material, image)
+#        node_utils.nodesMatModel(material, image)
 
-    #Uniquify looping forever!
-    #render_path = scene.icomake_props.rendermass_output + os.path.splitext(pgroup.name)[0] + ".tga"
-    #render_output = utils.uniquify(render_path)
+#    #Uniquify looping forever!
+#    #render_path = scene.icomake_props.rendermass_output + os.path.splitext(pgroup.name)[0] + ".tga"
+#    #render_output = utils.uniquify(render_path)
 
-    render_output = scene.icomake_props.rendermass_output + os.path.splitext(pgroup.name)[0] + ".tga"
+#    render_output = scene.icomake_props.rendermass_output + os.path.splitext(pgroup.name)[0] + ".tga"
 
-    makeIcon(object, pos, render_output)
+#    makeIcon(object, pos, render_output)
 
-class IM_RenderMass(bpy.types.Operator):
-    """Render models and export icons"""
-    bl_idname = "icomake.rendermass"
-    bl_label = "Mass Render Icons"
-    
-    @classmethod
-    def poll(cls, context):
-        return len(context.scene.icomake_rendermass_imports) > 0 and context.scene.icomake_props.rendermass_output != ""
-    
-    def execute(self, context):
-        scene = context.scene
+#class IM_RenderMass(bpy.types.Operator):
+#    """Render models and export icons"""
+#    bl_idname = "icomake.rendermass"
+#    bl_label = "Mass Render Icons"
+#    
+#    @classmethod
+#    def poll(cls, context):
+#        return len(context.scene.icomake_rendermass_imports) > 0 and context.scene.icomake_props.rendermass_output != ""
+#    
+#    def execute(self, context):
+#        scene = context.scene
 
-        utils.cleanUpData("icomake_scenedata")
-        utils.cleanUpData("icomake_tempdata")
+#        utils.cleanUpData("icomake_scenedata")
+#        utils.cleanUpData("icomake_tempdata")
 
-        setupScene()
+#        setupScene()
 
-        for pgroup in scene.icomake_rendermass_imports:
-            utils.cleanUpData("icomake_tempdata")
-            RenderMass(pgroup)
-            
-        utils.cleanUpData("icomake_scenedata")
-        utils.cleanUpData("icomake_tempdata")
-        
-        return {'FINISHED'}
+#        for pgroup in scene.icomake_rendermass_imports:
+#            utils.cleanUpData("icomake_tempdata")
+#            RenderMass(pgroup)
+#            
+#        utils.cleanUpData("icomake_scenedata")
+#        utils.cleanUpData("icomake_tempdata")
+#        
+#        return {'FINISHED'}
 
 class IM_RenderSelected(bpy.types.Operator):
     """Render model and export icons"""
