@@ -157,7 +157,7 @@ class IM_GUI_PT_RenderMass(bpy.types.Panel):
             
             row = layout.row()
             row.prop(item, "position")
-            row.prop(item, "outline")
+#            row.prop(item, "outline")
         
         layout.label(text="Options:")
         row = layout.row()
@@ -184,15 +184,12 @@ class IM_GUI_PT_RenderSelected(bpy.types.Panel):
         layout.label(text="Options:")
         row = layout.row()
         row.prop(scene.icomake_props, "renderselected_position")
-        row.prop(scene.icomake_props, "renderselected_outline")
+#        row.prop(scene.icomake_props, "renderselected_outline")
 
         row = layout.row()
         row.prop(scene.icomake_props, "renderselected_output")
 
         layout.label(text="Operators:")
-        row = layout.row()
-        row.scale_y = 2.0
-        row.operator("icomake.materialselected")
 
         row = layout.row()
         row.scale_y = 2.0
@@ -202,37 +199,60 @@ class IM_GUI_PT_RenderSelected(bpy.types.Panel):
         row.scale_y = 2.0
         row.operator("icomake.cleanup")
 
+class ShaderEditorPanel:
+    bl_space_type = 'NODE_EDITOR'
+    bl_region_type = 'UI'
+    bl_category = "Tool"
+
+    @classmethod
+    def poll(cls, context):
+        return (context.material is not None)
+
+class IM_ShaderPanel(ShaderEditorPanel, bpy.types.Panel):
+    bl_idname = "IM_ShaderPanel"
+    bl_label = "ICOMAKE Tools"
+
+    def draw(self, context):
+        layout = self.layout
+        scene = context.scene
+        
+        layout.label(text="Operators:")
+        
+        row = layout.row()
+        row.scale_y = 2.0
+        row.operator("icomake.pmshadertree")
+
 #class IM_GUI_FL_UL_DataList(bpy.types.UIList):
 #    """IM_GUI Data List."""
-#
+
 #    def draw_item(self, context, layout, data, item, icon, active_data,
 #                  active_propname, index):
-#
+
 #        # We could write some code to decide which icon to use here...
 #        data_icon = 'RNA'
-#
+
 #        # Make sure your code supports all 3 layout types
 #        if self.layout_type in {'DEFAULT', 'COMPACT'}:
 #            layout.label(text = item.name, icon = data_icon)
 #            layout.label(text = item.type)
-#
+
 #        elif self.layout_type in {'GRID'}:
 #            layout.alignment = 'CENTER'
 #            layout.label(text="", icon = data_icon)
-#
+
 #class IM_GUI_PT_Data(bpy.types.Panel):
 #    """Render Icons GUI."""
-#
+
 #    bl_label = "Icon Maker Data"
 #    bl_idname = "SCENE_PT_ICOMAKE_GUI_DATA"
 #    bl_space_type = 'PROPERTIES'
 #    bl_region_type = 'WINDOW'
 #    bl_context = "scene"
-#
+
 #    def draw(self, context):
 #        layout = self.layout
 #        scene = context.scene
-#
+
 #        row = layout.row()
 #        row.template_list("IM_GUI_FL_UL_DataList", "ICOMAKE_GUI_DL", scene,
 #                          "icomake_data", scene, "icomake_data_index")

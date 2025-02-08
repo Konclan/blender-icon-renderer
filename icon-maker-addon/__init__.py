@@ -39,10 +39,10 @@ class IM_SceneProps(bpy.types.PropertyGroup):
         description="Position of the model in PeTI",
         default="FLOOR",)
     
-    renderselected_outline: bpy.props.IntProperty(
-        name="Ouline Thickness",
-        description="Thickness of the object outline",
-        default=1,)
+#    renderselected_outline: bpy.props.IntProperty(
+#        name="Ouline Thickness",
+#        description="Thickness of the object outline",
+#        default=1,)
 
     rendermass_output: bpy.props.StringProperty(
         name="Render Directory",
@@ -67,10 +67,10 @@ class IM_Imports(bpy.types.PropertyGroup):
         description="Position of the model in PeTI",
         default="FLOOR",)
     
-    outline: bpy.props.IntProperty(
-        name="Ouline Thickness",
-        description="Thickness of the object outline",
-        default=1,)
+#    outline: bpy.props.IntProperty(
+#        name="Ouline Thickness",
+#        description="Thickness of the object outline",
+#        default=1,)
 
 class IM_TestOp_Create(bpy.types.Operator):
     """Test Operator: Create"""
@@ -117,7 +117,8 @@ class IM_TestOp_Remove(bpy.types.Operator):
         utils.cleanUpBlend()
         
         return {'FINISHED'}
-    
+
+
 def menu_func(self, context):
     self.layout.operator(renderer.IM_RenderSelected.bl_idname)
     self.layout.operator(renderer.IM_MaterialSelected.bl_idname)
@@ -130,7 +131,7 @@ _classes = (
     IM_SceneProps,
     IM_Imports,
     renderer.IM_RenderSelected,
-    renderer.IM_MaterialSelected,
+    renderer.IM_PMShaderTree,
     renderer.IM_RenderMass,
     renderer.IM_CleanUp,
     gui.IM_GUI_FL_UL_ImportList,
@@ -142,6 +143,7 @@ _classes = (
     gui.IM_GUI_PT_RenderSelected,
     IM_TestOp_Create,
     IM_TestOp_Remove,
+    gui.IM_ShaderPanel,
 )
 
 def register():

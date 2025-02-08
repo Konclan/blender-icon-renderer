@@ -5,37 +5,37 @@ import mathutils
 
 from . import utils, node_utils
 
-def createOutlineObject(object, thickness):
-    
-    scene = bpy.context.scene
+#def createOutlineObject(object, thickness):
+#    
+#    scene = bpy.context.scene
 
-    # Copy model
-    utils.selectObject(object)
-    outlineObject = object.copy()
-    outlineObject.data = object.data.copy()
-    utils.setData(outlineObject)
-    outlineObject.name = object.name + "_outline"
-    outlineObject.data.name = object.name + "_outline"
-    outlineObject.data.materials.clear()
-    scene.collection.objects.link(outlineObject)
-    
-    #Outline Material
-    outlineMat = bpy.data.materials.new(name="[ICOMAKE] Outline")
-    utils.setData(outlineMat)
-    outlineMat.use_backface_culling = True
-    outlineMat.diffuse_color = (0, 0, 0, 1)
-    outlineMat.shadow_method = 'NONE'
-    node_utils.nodesMatOutline(outlineMat)
-    outlineObject.data.materials.append(outlineMat)
-    
-    utils.selectObject(outlineObject)
-    bpy.ops.object.editmode_toggle()
-    bpy.ops.mesh.select_all(action='SELECT')
-    bpy.ops.mesh.flip_normals()
-    bpy.ops.transform.shrink_fatten(value=-thickness)
-    bpy.ops.object.mode_set()
-    
-    return outlineObject
+#    # Copy model
+#    utils.selectObject(object)
+#    outlineObject = object.copy()
+#    outlineObject.data = object.data.copy()
+#    utils.setData(outlineObject)
+#    outlineObject.name = object.name + "_outline"
+#    outlineObject.data.name = object.name + "_outline"
+#    outlineObject.data.materials.clear()
+#    scene.collection.objects.link(outlineObject)
+#    
+#    #Outline Material
+#    outlineMat = bpy.data.materials.new(name="[ICOMAKE] Outline")
+#    utils.setData(outlineMat)
+#    outlineMat.use_backface_culling = True
+#    outlineMat.diffuse_color = (0, 0, 0, 1)
+#    outlineMat.shadow_method = 'NONE'
+#    node_utils.nodesMatOutline(outlineMat)
+#    outlineObject.data.materials.append(outlineMat)
+#    
+#    utils.selectObject(outlineObject)
+#    bpy.ops.object.editmode_toggle()
+#    bpy.ops.mesh.select_all(action='SELECT')
+#    bpy.ops.mesh.flip_normals()
+#    bpy.ops.transform.shrink_fatten(value=-thickness)
+#    bpy.ops.object.mode_set()
+#    
+#    return outlineObject
 
 def createShadowObject(object):
     utils.selectObject(object)
@@ -88,7 +88,7 @@ def renderFrame(output):
 
 # Call Functions
 
-def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
+def makeIcon(object, pos = "FLOOR", render_output = "//"):
     scene = bpy.context.scene
 
     # camera and object placement
@@ -129,9 +129,9 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
     if not scene.collection.objects.get(camera.name):
         scene.collection.objects.link(camera)
 
-    tempColOut = bpy.data.collections.new("[ICOMAKE] Outline Collection")
-    utils.setData(tempColOut)
-    scene.collection.children.link(tempColOut)
+#    tempColOut = bpy.data.collections.new("[ICOMAKE] Outline Collection")
+#    utils.setData(tempColOut)
+#    scene.collection.children.link(tempColOut)
 
     tempColSdw = bpy.data.collections.new("[ICOMAKE] Shadow Collection")
     utils.setData(tempColSdw)
@@ -139,10 +139,10 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
     
     
     # Create extra objects for rendering
-    if not outline == 0:
-        outlineObject = createOutlineObject(object, outline)
-        scene.collection.objects.unlink(outlineObject)
-        tempColOut.objects.link(outlineObject)
+#    if not outline == 0:
+#        outlineObject = createOutlineObject(object, outline)
+#        scene.collection.objects.unlink(outlineObject)
+#        tempColOut.objects.link(outlineObject)
     
     if not pos == "CEIL":
         shadowPlane, shadowObject = createShadowObject(object)
@@ -167,10 +167,10 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
     bpy.context.window.view_layer = objectLayer
     utils.include_only_one_collection(objectLayer, tempCol)
     
-    outlineLayer = scene.view_layers.new(name='[ICOMAKE] Outline Layer')
-    utils.setData(outlineLayer)
-    bpy.context.window.view_layer = outlineLayer
-    utils.include_only_one_collection(outlineLayer, tempColOut)
+#    outlineLayer = scene.view_layers.new(name='[ICOMAKE] Outline Layer')
+#    utils.setData(outlineLayer)
+#    bpy.context.window.view_layer = outlineLayer
+#    utils.include_only_one_collection(outlineLayer, tempColOut)
     
     shadowLayer = scene.view_layers.new(name='[ICOMAKE] Shadow Layer')
     utils.setData(shadowLayer)
@@ -180,7 +180,7 @@ def makeIcon(object, pos = "FLOOR", outline = 0, render_output = "//"):
     bpy.context.window.view_layer = objectLayer
 
     # Compositing
-    node_utils.nodesCompositing(objectLayer, outlineLayer, shadowLayer)
+    node_utils.nodesCompositing(objectLayer, shadowLayer)
 
     renderFrame(render_output)
 
@@ -249,7 +249,7 @@ def RenderMass(pgroup):
 
     render_output = scene.icomake_props.rendermass_output + os.path.splitext(pgroup.name)[0] + ".tga"
 
-    makeIcon(object, pos, pgroup.outline, render_output)
+    makeIcon(object, pos, render_output)
 
 class IM_RenderMass(bpy.types.Operator):
     """Render models and export icons"""
@@ -299,8 +299,8 @@ class IM_RenderSelected(bpy.types.Operator):
 
         render_output = scene.icomake_props.renderselected_output + os.path.splitext(object.name)[0] + ".tga"
         position = scene.icomake_props.renderselected_position
-        outline = scene.icomake_props.renderselected_outline
-        makeIcon(object, position, outline, render_output)
+#        outline = scene.icomake_props.renderselected_outline
+        makeIcon(object, position, render_output)
 
         utils.cleanUpData("icomake_scenedata")
         utils.cleanUpData("icomake_tempdata")
@@ -310,37 +310,61 @@ class IM_RenderSelected(bpy.types.Operator):
         
         return {'FINISHED'}
 
-class IM_MaterialSelected(bpy.types.Operator):
-    """Apply PM Shader to selected"""
-    bl_idname = "icomake.materialselected"
-    bl_label = "Apply PM Shader to Selected"
+class IM_PMShaderTree(bpy.types.Operator):
+    """Add PM Shader Tree"""
+    bl_idname = "icomake.pmshadertree"
+    bl_label = "Add PM Shader Tree"
     
     @classmethod
     def poll(cls, context):
-        return context.active_object is not None and len(context.selected_objects) > 0
+        return context.material is not None
     
     def execute(self, context):
         scene = context.scene
 
-        object = context.active_object
+        material = context.material
 
-        for material_slot in object.material_slots:
-            material = material_slot.material
+        # Check for Node Group
+        if not bpy.data.node_groups.get("[ICOMAKE] NGPmShader"):
+            nodesPMShader()
             
-            # Make temp image for material
-            if not material.use_nodes == True:
-                material.use_nodes = True
-            
-            imageNodes = node_utils.getNodesByType(material.node_tree, "TEX_IMAGE")
-            if len(imageNodes) > 0:
-                image = imageNodes[0].image
-            else:
-                image = bpy.data.images.new(name=material.name + "_temp", width=16, height=16)
-                image.generated_color = (1, 0, 0.5, 1)
-
-            node_utils.nodesMatModel(material, image)
+        nodeShader = material.node_tree.nodes.new("ShaderNodeGroup")
+        nodeShader.location = (0, 0)
+        nodeShader.node_tree = bpy.data.node_groups['[ICOMAKE] NGPmShader']
         
         return {'FINISHED'}
+
+#class IM_MaterialSelected(bpy.types.Operator):
+#    """Apply PM Shader to selected"""
+#    bl_idname = "icomake.materialselected"
+#    bl_label = "Apply PM Shader to Selected"
+#    
+#    @classmethod
+#    def poll(cls, context):
+#        return context.active_object is not None and len(context.selected_objects) > 0
+#    
+#    def execute(self, context):
+#        scene = context.scene
+
+#        object = context.active_object
+
+#        for material_slot in object.material_slots:
+#            material = material_slot.material
+#            
+#            # Make temp image for material
+#            if not material.use_nodes == True:
+#                material.use_nodes = True
+#            
+#            imageNodes = node_utils.getNodesByType(material.node_tree, "TEX_IMAGE")
+#            if len(imageNodes) > 0:
+#                image = imageNodes[0].image
+#            else:
+#                image = bpy.data.images.new(name=material.name + "_temp", width=16, height=16)
+#                image.generated_color = (1, 0, 0.5, 1)
+
+#            node_utils.nodesMatModel(material, image)
+#        
+#        return {'FINISHED'}
 
 class IM_CleanUp(bpy.types.Operator):
     """Apply PM Shader to selected"""
