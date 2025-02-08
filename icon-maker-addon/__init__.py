@@ -56,59 +56,11 @@ class IM_Imports(bpy.types.PropertyGroup):
         description="Position of the model in PeTI",
         default="FLOOR",)
 
-class IM_TestOp_Create(bpy.types.Operator):
-    """Test Operator: Create"""
-    bl_idname = "icomake.test_create"
-    bl_label = "MI Test Create"
-    
-    def execute(self, context):
-        scene = context.scene
-
-        bpy.ops.mesh.primitive_cube_add(size=2, enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
-        cube = bpy.context.active_object
-        cube["icomake_data"] = True
-        cube.data["icomake_data"] = True
-
-        material = bpy.data.materials.new(name="Test Mat")
-        material["icomake_data"] = True
-
-        camera_data = bpy.data.cameras.new("Camera")
-        camera = bpy.data.objects.new("Camera", camera_data)
-        camera_data["icomake_data"] = True
-
-        image = bpy.data.images.load(filepath="C:/Users/class/Pictures/flushed-face_1f633.png", check_existing=True)
-        image["icomake_data"] = True
-
-        armature = bpy.data.armatures.new(name="Test Arma")
-        armature["icomake_data"] = True
-
-        collection = bpy.data.collections.new(name="Test Collection")
-        collection["icomake_data"] = True
-
-        view_layer = scene.view_layers.new(name='Test Layer')
-        view_layer["icomake_data"] = True
-        
-        return {'FINISHED'}
-
-class IM_TestOp_Remove(bpy.types.Operator):
-    """Test Operator: Remove"""
-    bl_idname = "icomake.test_remove"
-    bl_label = "MI Test Remove"
-    
-    def execute(self, context):
-        scene = context.scene
-
-        utils.cleanUpBlend()
-        
-        return {'FINISHED'}
-
 
 def menu_func(self, context):
     self.layout.operator(renderer.IM_RenderSelected.bl_idname)
     self.layout.operator(renderer.IM_MaterialSelected.bl_idname)
     self.layout.operator(renderer.IM_CleanUp.bl_idname)
-    self.layout.operator(IM_TestOp_Create.bl_idname)
-    self.layout.operator(IM_TestOp_Remove.bl_idname)
 
 _classes = (
     IM_SceneProps,
@@ -117,8 +69,6 @@ _classes = (
     renderer.IM_PMShaderTree,
     renderer.IM_CleanUp,
     gui.IM_GUI_PT_RenderSelected,
-    IM_TestOp_Create,
-    IM_TestOp_Remove,
     gui.IM_ShaderPanel,
 )
 
