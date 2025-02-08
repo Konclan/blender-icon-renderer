@@ -82,7 +82,7 @@ def makeIcon(object, pos = "FLOOR", render_output = "//"):
         tempCol = objcol
         
     if not scene.collection.objects.get(camera.name):
-        scene.collection.objects.link(camera))
+        scene.collection.objects.link(camera)
 
     tempColSdw = bpy.data.collections.new("[ICOMAKE] Shadow Collection")
     utils.setData(tempColSdw)
