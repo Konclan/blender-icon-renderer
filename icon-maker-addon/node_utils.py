@@ -143,17 +143,6 @@ def nodesMatModel(material, image):
     material.node_tree.links.new(nodeTexImage.outputs[1], nodeShader.inputs[1])
     material.node_tree.links.new(nodeShader.outputs[0], nodeOutput.inputs[0])
     
-#def nodesMatOutline(material):
-#    nodesCleanMat(material)
-#    
-#    # Create nodes
-#    nodeOutput = material.node_tree.nodes.new("ShaderNodeOutputMaterial")
-#    nodeRGB = material.node_tree.nodes.new("ShaderNodeRGB")
-#    nodeRGB.outputs[0].default_value = (0.212231, 0.205079, 0.205079, 1)
-#    
-#    # Link nodes
-#    material.node_tree.links.new(nodeRGB.outputs[0], nodeOutput.inputs[0])
-    
 def nodesMatShadow(material):
     nodesCleanMat(material)
     
@@ -171,17 +160,6 @@ def nodesMatShadow(material):
     # Link nodes
     material.node_tree.links.new(nodeShader.outputs[0], nodeOutput.inputs[0])
 
-#def nodesMatClear(material):
-#    nodesCleanMat(material)
-#    
-#    # Create nodes
-#    nodeOutput = material.node_tree.nodes.new("ShaderNodeOutputMaterial")
-#    nodeShader = material.node_tree.nodes.new("ShaderNodeBsdfTransparent")
-#    nodeShader.inputs[0].default_value = (1, 1, 1, 0)
-#    
-#    # Link nodes
-#    material.node_tree.links.new(nodeShader.outputs[0], nodeOutput.inputs[0])
-    
 def nodesCompositing(objectLayer, shadowLayer, shadows = True):
     bpy.context.scene.use_nodes = True
     compTree = bpy.context.scene.node_tree
@@ -195,26 +173,10 @@ def nodesCompositing(objectLayer, shadowLayer, shadows = True):
     layer_node_object = compTree.nodes.new("CompositorNodeRLayers")
     layer_node_object.location = (0, 0)
     layer_node_object.layer = objectLayer.name
-    
-#    layer_node_outline = compTree.nodes.new("CompositorNodeRLayers")
-#    layer_node_outline.location = (0, -400)
-#    layer_node_outline.layer = outlineLayer.name
 
     layer_node_shadow = compTree.nodes.new("CompositorNodeRLayers")
     layer_node_shadow.location = (0, -800)
     layer_node_shadow.layer = shadowLayer.name
-    
-#    comp_node_alphaOver1 = compTree.nodes.new("CompositorNodeAlphaOver")
-#    comp_node_alphaOver1.location = (400, 0)
-    
-#    comp_node_alphaOver2 = compTree.nodes.new("CompositorNodeAlphaOver")
-#    comp_node_alphaOver2.location = (600, 0)
-    
-#    compTree.links.new(layer_node_object.outputs[0], comp_node_alphaOver1.inputs[2])
-#    compTree.links.new(layer_node_outline.outputs[0], comp_node_alphaOver1.inputs[1])
-#    compTree.links.new(comp_node_alphaOver1.outputs[0], comp_node_alphaOver2.inputs[2])
-#    compTree.links.new(layer_node_shadow.outputs[0], comp_node_alphaOver2.inputs[1])
-#    compTree.links.new(comp_node_alphaOver2.outputs[0], comp_node.inputs[0])
 
     comp_node_alphaOver = compTree.nodes.new("CompositorNodeAlphaOver")
     comp_node_alphaOver.location = (400, 0)
@@ -226,7 +188,6 @@ def nodesCompositing(objectLayer, shadowLayer, shadows = True):
 def getNodesByType(node_tree, type):
     foundNodes = []
     for node in node_tree.nodes:
-        #print(node.type)
         if node.type == type:
             foundNodes.append(node)
             
