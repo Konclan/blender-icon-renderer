@@ -12,10 +12,10 @@ bl_info = {
 }
 
 import bpy
-from . import renderer, gui, node_utils, utils
+from . import renderer, gui, node_utils, utils, im_objs
 import importlib
 
-for module in [renderer, gui, node_utils, utils]:
+for module in [renderer, gui, node_utils, utils, im_objs]:
     importlib.reload(module)
 
 position_options = [
@@ -27,53 +27,37 @@ position_options = [
 class IM_SceneProps(bpy.types.PropertyGroup):
     """Group of properties representing an item in the list."""
     
-    renderselected_output: bpy.props.StringProperty(
+    render_output: bpy.props.StringProperty(
         name="Render Directory",
         description="Directory renders are saved to",
         default="//",
         subtype='DIR_PATH')
 
-    renderselected_position: bpy.props.EnumProperty(
-        name="Position",
-        items=position_options,
-        description="Position of the model in PeTI",
-        default="FLOOR",)
-
-class IM_Imports(bpy.types.PropertyGroup):
-    name: bpy.props.StringProperty(
-        name="File",
-        description="A name for this file",
-        default="Untitled")
-    
-    path: bpy.props.StringProperty(
-        name="Path",
-        description="Path of this file reletive to this blend file",
-        default="Untitled")
-    
-    position: bpy.props.EnumProperty(
-        name="Position",
-        items=position_options,
-        description="Position of the model in PeTI",
-        default="FLOOR",)
+#    render_position: bpy.props.EnumProperty(
+#        name="Position",
+#        items=position_options,
+#        description="Position of the model in PeTI",
+#        default="FLOOR",)
 
 
 def menu_func(self, context):
-    self.layout.operator(renderer.IM_RenderSelected.bl_idname)
-    self.layout.operator(renderer.IM_MaterialSelected.bl_idname)
+    self.layout.operator(renderer.IM_RenderActive.bl_idname)
     self.layout.operator(renderer.IM_CleanUp.bl_idname)
+    
 
 _classes = (
     IM_SceneProps,
-    IM_Imports,
-    renderer.IM_RenderSelected,
-    renderer.IM_PMShaderTree,
+    renderer.IM_RenderActive,
     renderer.IM_CleanUp,
-    gui.IM_GUI_PT_RenderSelected,
+    gui.IM_GUI_PT_RenderActive,
+    gui.IM_3DViewPanel,
     gui.IM_ShaderPanel,
+    im_objs.IM_AddDefObject,
+    im_objs.IM_PMShaderTree,
 )
 
 def register():
-    
+
     def make_pointer(prop_type, prop_name):
         return bpy.props.PointerProperty(name=prop_name,type=prop_type)
     
@@ -81,9 +65,6 @@ def register():
         bpy.utils.register_class(cls)
     
     bpy.types.Scene.icomake_props = make_pointer(IM_SceneProps, "Icon Maker Settings")
-
-    bpy.types.Scene.icomake_rendermass_imports = bpy.props.CollectionProperty(name = "Icon Maker Imports", type = IM_Imports)
-    bpy.types.Scene.icomake_rendermass_imports_index = bpy.props.IntProperty(name = "Icon Maker Import Index",default = 0)
     
     bpy.types.VIEW3D_MT_object.append(menu_func)  # Adds the new operator to an existing menu.
         
@@ -95,8 +76,8 @@ def unregister():
     bpy.types.VIEW3D_MT_object.remove(menu_func)
     
     del bpy.types.Scene.icomake_props
-    del bpy.types.Scene.icomake_rendermass_imports
-    del bpy.types.Scene.icomake_rendermass_imports_index
 
+# This allows you to run the script directly from Blender's Text editor
+# to test the add-on without having to install it.
 if __name__ == "__main__":
     register()

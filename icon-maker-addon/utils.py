@@ -3,14 +3,16 @@ import tempfile
 import itertools as IT
 import os
 
-def setData(object, data_name = "icomake_tempdata"):
-    #print("Data Name = " + data_name)
-    #print("Object = " + object.name)
-    #print("Object Type = " + str(type(object)))
-    object[data_name] = True
-    if "bpy_types.Object" in str(type(object)):
-        #print("Object Data = " + object.data.name)
-        object.data[data_name] = True
+def setData(obj, data_name = "icomake_tempdata", new_data = True):
+#    print("Data Name = " + data_name)
+#    print("Object = " + object.name)
+#    print("Object Type = " + getattr(object, 'type', ''))
+#    objType = getattr(object, 'type', '')
+    obj[data_name] = new_data
+    if ("bpy_types.Object" in str(type(obj)) and 
+        obj.data is not None):
+#        print("Object Data = " + object.data.name)
+        obj.data[data_name] = new_data
 
 def getData(data_name):
     data = []
@@ -39,7 +41,7 @@ def getData(data_name):
 def cleanUpData(data_name):
     for data in getData(data_name):
         try: 
-            #print("Data Type: " + str(type(data)))
+#            print("Data Type: " + str(type(data)))
             if "bpy_types.Object" in str(type(data)) and bpy.data.objects.get(data.name):
                 bpy.data.objects.remove(bpy.data.objects[data.name], do_unlink=True)
             elif "bpy_types.Mesh" in str(type(data)) and bpy.data.meshes.get(data.name):
@@ -77,10 +79,11 @@ def deselectAll():
         obj.select_set(False)
     bpy.context.view_layer.objects.active = None
 
-def selectObject(object):
+def selectObjects(context, objects):
     deselectAll()
-    bpy.context.view_layer.objects.active = object
-    object.select_set(True)
+    context.view_layer.objects.active = objects[0]
+    for obj in objects:
+        obj.select_set(True)
 
 def importObj(path):
     bpy.ops.import_scene.obj(filepath=path, use_edges=True, use_smooth_groups=True, use_split_objects=True, use_split_groups=False, use_groups_as_vgroups=False, use_image_search=True, split_mode='ON', global_clamp_size=0.0, axis_forward='-X', axis_up='Z')
@@ -121,9 +124,9 @@ def include_only_one_collection(view_layer: bpy.types.ViewLayer, collection_incl
     parent_collections = []
     parent_collections.append(collection_include.name)
     get_parent_collection_names(collection_include, parent_collections)
-    #print("!!!Collections:")
-    #for col in parent_collections:
-    #    print(col)
+#    print("!!!Collections:")
+#    for col in parent_collections:
+#        print(col)
     for layer_collection in view_layer.layer_collection.children:
         if not layer_collection.collection.name in parent_collections:
             layer_collection.exclude = True
@@ -145,3 +148,121 @@ def uniquify(path, sep = ''):
         fd, filename = tempfile.mkstemp(dir = dirname, prefix = filename, suffix = ext)
         tempfile._name_sequence = orig
     return filename
+
+def group_dimensions(objs):
+    
+    scd1 = [0,0,0]
+    
+    minx = 0
+    miny = 0
+    minz = 0
+    
+    maxx = 0
+    maxy = 0
+    maxz = 0
+    
+    
+    c1=0
+    
+    for o1 in objs:
+    
+        if o1.type != "MESH":
+            pass
+    
+        else:
+            bounds = get_object_bounds(o1)
+    
+        
+            oxmin = bounds[0][0]
+            oxmax = bounds[1][0]
+        
+            oymin = bounds[0][1]
+            oymax = bounds[1][1]
+        
+            ozmin = bounds[0][2]
+            ozmax = bounds[1][2]
+    
+            if  c1 == 0 :
+                minx = oxmin
+                miny = oymin
+                minz = ozmin
+    
+                maxx = oxmax
+                maxy = oymax
+                maxz = ozmax
+    
+         # min 
+    
+            if oxmin <= minx:
+                minx = oxmin
+    
+            if oymin <= miny:
+                miny = oymin
+    
+            if ozmin <= minz:
+                minz = ozmin
+    
+        # max 
+    
+            if oxmax >= maxx:
+                maxx = oxmax
+    
+            if oymax >= maxy:
+                maxy = oymax
+    
+            if ozmax >= maxz:
+                maxz = ozmax
+    
+        c1+=1
+    
+    
+    widhtx=(maxx-minx)
+    
+    widhty=maxy-miny
+    
+    widhtz=maxz-minz
+    
+    
+    scd = [widhtx ,widhty ,widhtz]
+    
+    scd1 = scd
+    
+    return scd1
+
+def get_object_bounds(obj):
+
+    obminx = obj.location.x
+    obminy = obj.location.y
+    obminz = obj.location.z
+
+    obmaxx = obj.location.x
+    obmaxy = obj.location.y
+    obmaxz = obj.location.z
+
+    for vertex in obj.bound_box[:]:
+
+        x = obj.location.x + (obj.scale.x * vertex[0])
+        y = obj.location.y + (obj.scale.y * vertex[1])
+        z = obj.location.z + (obj.scale.z * vertex[2])
+
+        if x <= obminx:
+            obminx = x
+        if y <= obminy:
+            obminy = y
+        if z <= obminz:
+            obminz = z
+
+        if x >= obmaxx:
+            obmaxx = x
+        if y >= obmaxy:
+            obmaxy = y
+        if z >= obmaxz:
+            obmaxz = z
+
+    boundsmin = [obminx,obminy,obminz]
+    boundsmax = [obmaxx,obmaxy,obmaxz] 
+
+    bounds = [boundsmin,boundsmax]
+
+
+    return bounds
