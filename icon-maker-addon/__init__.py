@@ -33,11 +33,16 @@ class IM_SceneProps(bpy.types.PropertyGroup):
         default="//",
         subtype='DIR_PATH')
 
-#    render_position: bpy.props.EnumProperty(
-#        name="Position",
-#        items=position_options,
-#        description="Position of the model in PeTI",
-#        default="FLOOR",)
+    render_position: bpy.props.EnumProperty(
+        name="Position",
+        items=position_options,
+        description="Position of the model in PeTI",
+        default="FLOOR",)
+    
+    render_cleanup: bpy.props.BoolProperty(
+        name="Post Render Cleanup",
+        description="Cleanup data after rendering?",
+        default=True,)
 
 
 def menu_func(self, context):

@@ -16,6 +16,9 @@ class IM_GUI_PT_RenderActive(bpy.types.Panel):
 
         row = layout.row()
         row.prop(scene.icomake_props, "render_output")
+        
+        row = layout.row()
+        row.prop(scene.icomake_props, "render_cleanup")
 
         layout.label(text="Operators:")
 

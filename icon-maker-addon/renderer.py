@@ -3,6 +3,8 @@ import os.path
 from math import radians
 import mathutils
 
+from mathutils import Vector
+
 from . import utils, node_utils, im_objs
 
 def renderFrame(output):
@@ -21,7 +23,7 @@ def renderFrame(output):
 
 # Call Functions
 
-def makeIcon(context, coll, pos = "FLOOR", render_output = "//"):
+def makeIcon(context, coll, render_output = "//"):
     scene = context.scene
     
     # Sanity check
@@ -29,6 +31,21 @@ def makeIcon(context, coll, pos = "FLOOR", render_output = "//"):
         raise ValueError('Collection cannot be Scene Collection')
 
     objs = coll.all_objects
+    
+    config = None
+    for obj in objs:
+        if obj.type != "EMPTY":
+            pass
+        elif len(obj.keys()) > 1:
+            for K in obj.keys():
+                if K in 'icomake_data':
+                    config = obj
+                    break
+    
+    if config is None:
+        raise ValueError('No config object in collection')
+    
+    pos = config['icomake_position']
 
     # camera and object placement
     camera_data = bpy.data.cameras.new("[ICOMAKE] Camera")
@@ -48,19 +65,9 @@ def makeIcon(context, coll, pos = "FLOOR", render_output = "//"):
     
     camera.data.type = "ORTHO"
     scene.camera = camera
-    utils.selectObjects(context, objs)
-    bpy.ops.view3d.camera_to_view_selected()
-    camera.data.ortho_scale += 30
-    
-#    objcol = object.users_collection[0]
-#    
-#    if objcol == scene.collection:
-#        tempCol = bpy.data.collections.new("[ICOMAKE] Object Collection")
-#        utils.setData(tempCol)
-#        scene.collection.children.link(tempCol)
-#        tempCol.objects.link(object)
-#    else:
-#        tempCol = objcol
+#    utils.selectObjects(context, objs)
+#    bpy.ops.view3d.camera_to_view_selected()
+    camera.data.ortho_scale = max(config.scale) * 3.09807
         
     if not scene.collection.objects.get(camera.name):
         scene.collection.objects.link(camera)
@@ -71,19 +78,21 @@ def makeIcon(context, coll, pos = "FLOOR", render_output = "//"):
     
     if not pos == "CEIL":
         shadowPlane, shadowObjects = im_objs.createShadowObjects(context, objs)
+        shadowPlane.location = config.location - Vector((0.0, 0.0, config.scale.z - 0.5))
         context.collection.objects.unlink(shadowPlane)
         tempColSdw.objects.link(shadowPlane)
         for obj in shadowObjects:
             tempColSdw.objects.link(obj)
         
     # one blender unit in x-direction
-    vec = mathutils.Vector((0.0, 0.0, max(utils.group_dimensions(objs)) + 100.0))
+#    print(max(config.scale))
+    vec = Vector((0.0, 0.0, max(config.scale) + 100))
     inv = camera.matrix_world.copy()
     inv.invert()
     # vec aligned to local axis in Blender 2.8+
     # in previous versions: vec_rot = vec * inv
     vec_rot = vec @ inv
-    camera.location = camera.location + vec_rot
+    camera.location = config.location + camera.location + vec_rot
     
     # RENDER!
     objectLayer = scene.view_layers.new(name='[ICOMAKE] Object Layer')
@@ -149,15 +158,12 @@ class IM_RenderActive(bpy.types.Operator):
         setupScene()
 
         render_output = scene.icomake_props.render_output + os.path.splitext(coll.name)[0] + ".tga"
-#        position = scene.icomake_props.render_position
         position = "FLOOR"
-        makeIcon(context, coll, position, render_output)
-
-#        utils.cleanUpData("icomake_scenedata")
-#        utils.cleanUpData("icomake_tempdata")
-
-#        if not len(object.users_collection) > 0 and scene.collection.objects.get(object.name):
-#            scene.collection.objects.link(object)
+        makeIcon(context, coll, render_output)
+        
+        if scene.icomake_props.render_cleanup:
+            utils.cleanUpData("icomake_scenedata")
+            utils.cleanUpData("icomake_tempdata")
         
         return {'FINISHED'}
 

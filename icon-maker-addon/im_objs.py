@@ -31,7 +31,6 @@ def createShadowObjects(context, objs):
 
     sdw_objs = []
     for obj in objs:
-        print(obj.name)
         if obj.type == "MESH":
             sdw_obj = obj.copy()
             sdw_obj.data = obj.data.copy()
@@ -41,7 +40,7 @@ def createShadowObjects(context, objs):
             sdw_objs.append(sdw_obj)
     
     # Place plane for shadows
-    bpy.ops.mesh.primitive_plane_add(size=1000, enter_editmode=False, align='WORLD', location=(0, 0, -utils.group_dimensions(objs)[1]/2 - 0.5), scale=(1, 1, 1))
+    bpy.ops.mesh.primitive_plane_add(size=1000, enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
     sdw_plane = context.active_object
     sdw_plane.name = "[ICOMAKE] Shadow Catcher"
     utils.setData(sdw_plane)

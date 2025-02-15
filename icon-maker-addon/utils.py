@@ -4,14 +4,9 @@ import itertools as IT
 import os
 
 def setData(obj, data_name = "icomake_tempdata", new_data = True):
-#    print("Data Name = " + data_name)
-#    print("Object = " + object.name)
-#    print("Object Type = " + getattr(object, 'type', ''))
-#    objType = getattr(object, 'type', '')
     obj[data_name] = new_data
     if ("bpy_types.Object" in str(type(obj)) and 
         obj.data is not None):
-#        print("Object Data = " + object.data.name)
         obj.data[data_name] = new_data
 
 def getData(data_name):
@@ -41,7 +36,6 @@ def getData(data_name):
 def cleanUpData(data_name):
     for data in getData(data_name):
         try: 
-#            print("Data Type: " + str(type(data)))
             if "bpy_types.Object" in str(type(data)) and bpy.data.objects.get(data.name):
                 bpy.data.objects.remove(bpy.data.objects[data.name], do_unlink=True)
             elif "bpy_types.Mesh" in str(type(data)) and bpy.data.meshes.get(data.name):
@@ -76,13 +70,17 @@ def selectObjects(context, objects):
     for obj in objects:
         obj.select_set(True)
 
+def get_parent_collection_names(collection, parent_collections):
+    for parent_collection in bpy.data.collections:
+        if collection.name in parent_collection.children.keys():
+            parent_collections.append(parent_collection.name)
+            get_parent_collection_names(parent_collection, parent_collections)
+            return
+
 def include_only_one_collection(view_layer: bpy.types.ViewLayer, collection_include: bpy.types.Collection):
     parent_collections = []
     parent_collections.append(collection_include.name)
     get_parent_collection_names(collection_include, parent_collections)
-#    print("!!!Collections:")
-#    for col in parent_collections:
-#        print(col)
     for layer_collection in view_layer.layer_collection.children:
         if not layer_collection.collection.name in parent_collections:
             layer_collection.exclude = True
