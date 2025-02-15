@@ -65,15 +65,6 @@ def cleanUpData(data_name):
         except Exception as e:
             print(e)
 
-def appendObject(object, type, file):
-    
-    directory = file + type
-
-    bpy.ops.wm.append(
-        filepath=directory + object, 
-        filename=object,
-        directory=directory)
-
 def deselectAll():
     for obj in bpy.data.objects:
         obj.select_set(False)
@@ -84,41 +75,6 @@ def selectObjects(context, objects):
     context.view_layer.objects.active = objects[0]
     for obj in objects:
         obj.select_set(True)
-
-def importObj(path):
-    bpy.ops.import_scene.obj(filepath=path, use_edges=True, use_smooth_groups=True, use_split_objects=True, use_split_groups=False, use_groups_as_vgroups=False, use_image_search=True, split_mode='ON', global_clamp_size=0.0, axis_forward='-X', axis_up='Z')
-    object = bpy.context.selected_objects[0]
-    
-    return object
-    
-def importSourceModel(path):   
-    
-    bpy.ops.import_scene.smd(filepath=path, append="NEW_ARMATURE")
-    
-    object = bpy.context.active_object.children[0]
-
-    collection = object.users_collection[0]
-    setData(collection)
-    
-    selectObject(object)
-    
-    # Apply Armature Modifier
-    for modifier in object.modifiers:
-        bpy.ops.object.modifier_apply(modifier=modifier.name)
-    
-    # Remove Armature
-    objs = bpy.data.objects
-    objs.remove(objs[object.parent.name], do_unlink=True)
-    bpy.data.meshes.remove(bpy.data.meshes["smd_bone_vis"])
-    
-    return object
-
-def get_parent_collection_names(collection, parent_collections):
-    for parent_collection in bpy.data.collections:
-        if collection.name in parent_collection.children.keys():
-            parent_collections.append(parent_collection.name)
-            get_parent_collection_names(parent_collection, parent_collections)
-            return
 
 def include_only_one_collection(view_layer: bpy.types.ViewLayer, collection_include: bpy.types.Collection):
     parent_collections = []
