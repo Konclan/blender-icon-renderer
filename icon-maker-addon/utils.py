@@ -9,6 +9,14 @@ def setData(obj, data_name = "icomake_tempdata", new_data = True):
         obj.data is not None):
         obj.data[data_name] = new_data
 
+def lookupData(obj, data_name):
+    if len(obj.keys()) > 1:
+        for K in obj.keys():
+            if K in data_name:
+                return obj[data_name]
+    
+    return None
+
 def getData(data_name):
     data = []
     for bpy_data_iter in (
@@ -103,120 +111,120 @@ def uniquify(path, sep = ''):
         tempfile._name_sequence = orig
     return filename
 
-def group_dimensions(objs):
-    
-    scd1 = [0,0,0]
-    
-    minx = 0
-    miny = 0
-    minz = 0
-    
-    maxx = 0
-    maxy = 0
-    maxz = 0
-    
-    
-    c1=0
-    
-    for o1 in objs:
-    
-        if o1.type != "MESH":
-            pass
-    
-        else:
-            bounds = get_object_bounds(o1)
-    
-        
-            oxmin = bounds[0][0]
-            oxmax = bounds[1][0]
-        
-            oymin = bounds[0][1]
-            oymax = bounds[1][1]
-        
-            ozmin = bounds[0][2]
-            ozmax = bounds[1][2]
-    
-            if  c1 == 0 :
-                minx = oxmin
-                miny = oymin
-                minz = ozmin
-    
-                maxx = oxmax
-                maxy = oymax
-                maxz = ozmax
-    
-         # min 
-    
-            if oxmin <= minx:
-                minx = oxmin
-    
-            if oymin <= miny:
-                miny = oymin
-    
-            if ozmin <= minz:
-                minz = ozmin
-    
-        # max 
-    
-            if oxmax >= maxx:
-                maxx = oxmax
-    
-            if oymax >= maxy:
-                maxy = oymax
-    
-            if ozmax >= maxz:
-                maxz = ozmax
-    
-        c1+=1
-    
-    
-    widhtx=(maxx-minx)
-    
-    widhty=maxy-miny
-    
-    widhtz=maxz-minz
-    
-    
-    scd = [widhtx ,widhty ,widhtz]
-    
-    scd1 = scd
-    
-    return scd1
+#def group_dimensions(objs):
+#    
+#    scd1 = [0,0,0]
+#    
+#    minx = 0
+#    miny = 0
+#    minz = 0
+#    
+#    maxx = 0
+#    maxy = 0
+#    maxz = 0
+#    
+#    
+#    c1=0
+#    
+#    for o1 in objs:
+#    
+#        if o1.type != "MESH":
+#            pass
+#    
+#        else:
+#            bounds = get_object_bounds(o1)
+#    
+#        
+#            oxmin = bounds[0][0]
+#            oxmax = bounds[1][0]
+#        
+#            oymin = bounds[0][1]
+#            oymax = bounds[1][1]
+#        
+#            ozmin = bounds[0][2]
+#            ozmax = bounds[1][2]
+#    
+#            if  c1 == 0 :
+#                minx = oxmin
+#                miny = oymin
+#                minz = ozmin
+#    
+#                maxx = oxmax
+#                maxy = oymax
+#                maxz = ozmax
+#    
+#         # min 
+#    
+#            if oxmin <= minx:
+#                minx = oxmin
+#    
+#            if oymin <= miny:
+#                miny = oymin
+#    
+#            if ozmin <= minz:
+#                minz = ozmin
+#    
+#        # max 
+#    
+#            if oxmax >= maxx:
+#                maxx = oxmax
+#    
+#            if oymax >= maxy:
+#                maxy = oymax
+#    
+#            if ozmax >= maxz:
+#                maxz = ozmax
+#    
+#        c1+=1
+#    
+#    
+#    widhtx=(maxx-minx)
+#    
+#    widhty=maxy-miny
+#    
+#    widhtz=maxz-minz
+#    
+#    
+#    scd = [widhtx ,widhty ,widhtz]
+#    
+#    scd1 = scd
+#    
+#    return scd1
 
-def get_object_bounds(obj):
+#def get_object_bounds(obj):
 
-    obminx = obj.location.x
-    obminy = obj.location.y
-    obminz = obj.location.z
+#    obminx = obj.location.x
+#    obminy = obj.location.y
+#    obminz = obj.location.z
 
-    obmaxx = obj.location.x
-    obmaxy = obj.location.y
-    obmaxz = obj.location.z
+#    obmaxx = obj.location.x
+#    obmaxy = obj.location.y
+#    obmaxz = obj.location.z
 
-    for vertex in obj.bound_box[:]:
+#    for vertex in obj.bound_box[:]:
 
-        x = obj.location.x + (obj.scale.x * vertex[0])
-        y = obj.location.y + (obj.scale.y * vertex[1])
-        z = obj.location.z + (obj.scale.z * vertex[2])
+#        x = obj.location.x + (obj.scale.x * vertex[0])
+#        y = obj.location.y + (obj.scale.y * vertex[1])
+#        z = obj.location.z + (obj.scale.z * vertex[2])
 
-        if x <= obminx:
-            obminx = x
-        if y <= obminy:
-            obminy = y
-        if z <= obminz:
-            obminz = z
+#        if x <= obminx:
+#            obminx = x
+#        if y <= obminy:
+#            obminy = y
+#        if z <= obminz:
+#            obminz = z
 
-        if x >= obmaxx:
-            obmaxx = x
-        if y >= obmaxy:
-            obmaxy = y
-        if z >= obmaxz:
-            obmaxz = z
+#        if x >= obmaxx:
+#            obmaxx = x
+#        if y >= obmaxy:
+#            obmaxy = y
+#        if z >= obmaxz:
+#            obmaxz = z
 
-    boundsmin = [obminx,obminy,obminz]
-    boundsmax = [obmaxx,obmaxy,obmaxz] 
+#    boundsmin = [obminx,obminy,obminz]
+#    boundsmax = [obmaxx,obmaxy,obmaxz] 
 
-    bounds = [boundsmin,boundsmax]
+#    bounds = [boundsmin,boundsmax]
 
 
-    return bounds
+#    return bounds

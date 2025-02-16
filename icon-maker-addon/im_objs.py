@@ -22,7 +22,7 @@ class IM_AddDefObject(bpy.types.Operator):
         empty.scale = (64, 64, 64)
         
         utils.setData(empty, "icomake_data")
-        utils.setData(empty, "icomake_position", context.scene.icomake_props.render_position)
+#        utils.setData(empty, "icomake_object_props.render_position", context.object.icomake_object_props.render_position)
         
         return {'FINISHED'}
 

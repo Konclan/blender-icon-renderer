@@ -48,17 +48,22 @@ class IM_SceneProps(bpy.types.PropertyGroup):
         items=resolutions,
         description="Resolution of rendered icon",
         default="256",)
+    
+    render_cleanup: bpy.props.BoolProperty(
+        name="Post Render Cleanup",
+        description="Cleanup data after rendering?",
+        default=True,)
 
+
+class IM_ObjectProps(bpy.types.PropertyGroup):
+    
     render_position: bpy.props.EnumProperty(
         name="Position",
         items=position_options,
         description="Position of the model in PeTI",
         default="FLOOR",)
     
-    render_cleanup: bpy.props.BoolProperty(
-        name="Post Render Cleanup",
-        description="Cleanup data after rendering?",
-        default=True,)
+    
 
 
 def menu_func(self, context):
@@ -68,6 +73,7 @@ def menu_func(self, context):
 
 _classes = (
     IM_SceneProps,
+    IM_ObjectProps,
     renderer.IM_RenderActive,
     renderer.IM_CleanUp,
     gui.IM_GUI_PT_RenderActive,
@@ -87,6 +93,8 @@ def register():
     
     bpy.types.Scene.icomake_props = make_pointer(IM_SceneProps, "Icon Maker Settings")
     
+    bpy.types.Object.icomake_object_props = make_pointer(IM_ObjectProps, "Icon Maker Object Properties")
+    
     bpy.types.VIEW3D_MT_object.append(menu_func)  # Adds the new operator to an existing menu.
         
 
@@ -97,6 +105,7 @@ def unregister():
     bpy.types.VIEW3D_MT_object.remove(menu_func)
     
     del bpy.types.Scene.icomake_props
+    del bpy.types.Object.icomake_object_props
 
 # This allows you to run the script directly from Blender's Text editor
 # to test the add-on without having to install it.

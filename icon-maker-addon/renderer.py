@@ -13,8 +13,8 @@ def renderFrame(output):
 
     # Settings
     scene.render.filepath = output
-    scene.render.resolution_x = 512
-    scene.render.resolution_y = 512
+    scene.render.resolution_x = int(scene.icomake_props.render_resolution)
+    scene.render.resolution_y = int(scene.icomake_props.render_resolution)
     scene.render.image_settings.file_format='TARGA'
     scene.render.film_transparent = True
     scene.view_settings.view_transform = 'Standard'
@@ -36,16 +36,14 @@ def makeIcon(context, coll, render_output = "//"):
     for obj in objs:
         if obj.type != "EMPTY":
             pass
-        elif len(obj.keys()) > 1:
-            for K in obj.keys():
-                if K in 'icomake_data':
-                    config = obj
-                    break
+        
+        if utils.lookupData(obj, 'icomake_data'):
+            config = obj
     
     if config is None:
         raise ValueError('No config object in collection')
     
-    pos = config['icomake_position']
+    pos = config.icomake_object_props.render_position
 
     # camera and object placement
     camera_data = bpy.data.cameras.new("[ICOMAKE] Camera")
@@ -60,8 +58,8 @@ def makeIcon(context, coll, render_output = "//"):
     elif pos == "CEIL":
         camera.rotation_euler = ([radians(a) for a in (60.0, 180.0, 390.0)])
 
-    scene.render.resolution_x = 512
-    scene.render.resolution_y = 512
+#    scene.render.resolution_x = scene.icomake_props.render_resolution
+#    scene.render.resolution_y = scene.icomake_props.render_resolution
     
     camera.data.type = "ORTHO"
     scene.camera = camera
@@ -83,11 +81,12 @@ def makeIcon(context, coll, render_output = "//"):
         tempColSdw.objects.link(shadowPlane)
         for obj in shadowObjects:
             tempColSdw.objects.link(obj)
+    
         
     # one blender unit in x-direction
 #    print(max(config.scale))
     vec = Vector((0.0, 0.0, max(config.scale) + 100))
-    inv = camera.matrix_world.copy()
+    inv = camera.rotation_euler.to_matrix()
     inv.invert()
     # vec aligned to local axis in Blender 2.8+
     # in previous versions: vec_rot = vec * inv

@@ -1,6 +1,8 @@
 import bpy
 import os.path
 
+from . import utils
+
 class IM_GUI_PT_RenderActive(bpy.types.Panel):
     """Icon Maker Render Active Panel."""
 
@@ -58,7 +60,13 @@ class IM_3DViewPanel(IM_3DViewport, bpy.types.Panel):
         row.scale_y = 2.0
         row.operator("icomake.renderactive")
         
-        layout.label(text="Defintion:")
+        if (context.object is not None and
+            utils.lookupData(context.object, "icomake_data")):
+            
+            layout.label(text="Defintion:")
+            
+            row = layout.row()
+            row.prop(context.object.icomake_object_props, "render_position")
 
 
 class IM_ShaderEditor:
