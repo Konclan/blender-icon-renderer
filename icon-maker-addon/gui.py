@@ -29,9 +29,9 @@ class IM_GUI_PT_RenderActive(bpy.types.Panel):
 
         layout.label(text="Operators:")
 
-        row = layout.row()
-        row.scale_y = 2.0
-        row.operator("icomake.renderactive")
+#        row = layout.row()
+#        row.scale_y = 2.0
+#        row.operator("icomake.renderactive")
 
         row = layout.row()
         row.scale_y = 2.0
