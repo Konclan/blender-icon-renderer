@@ -24,6 +24,16 @@ position_options = [
     ("CEIL", "Ceiling", "Item is on the ceiling"),
 ]
 
+resolutions = [
+    ("16", "16x16", ""),
+    ("32", "32x32", ""),
+    ("64", "64x64", ""),
+    ("128", "128x128", ""),
+    ("256", "256x256", ""),
+    ("512", "512x512", ""),
+    ("1024", "1024x1024", ""),
+]
+
 class IM_SceneProps(bpy.types.PropertyGroup):
     """Group of properties representing an item in the list."""
     
@@ -32,6 +42,12 @@ class IM_SceneProps(bpy.types.PropertyGroup):
         description="Directory renders are saved to",
         default="//",
         subtype='DIR_PATH')
+        
+    render_resolution: bpy.props.EnumProperty(
+        name="Resolution",
+        items=resolutions,
+        description="Resolution of rendered icon",
+        default="256",)
 
     render_position: bpy.props.EnumProperty(
         name="Position",

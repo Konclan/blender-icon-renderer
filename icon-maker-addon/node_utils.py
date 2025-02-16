@@ -180,10 +180,15 @@ def nodesCompositing(objectLayer, shadowLayer, shadows = True):
 
     comp_node_alphaOver = compTree.nodes.new("CompositorNodeAlphaOver")
     comp_node_alphaOver.location = (400, 0)
+    
+    comp_node_alphaOver2 = compTree.nodes.new("CompositorNodeAlphaOver")
+    comp_node_alphaOver2.location = (600, 0)
+    comp_node_alphaOver2.inputs[1].default_value = (0.791293, 0.806953, 0.814847, 0.003922)
 
     compTree.links.new(layer_node_object.outputs[0], comp_node_alphaOver.inputs[2])
     compTree.links.new(layer_node_shadow.outputs[0], comp_node_alphaOver.inputs[1])
-    compTree.links.new(comp_node_alphaOver.outputs[0], comp_node.inputs[0])
+    compTree.links.new(comp_node_alphaOver.outputs[0], comp_node_alphaOver2.inputs[2])
+    compTree.links.new(comp_node_alphaOver2.outputs[0], comp_node.inputs[0])
 
 def getNodesByType(node_tree, type):
     foundNodes = []
