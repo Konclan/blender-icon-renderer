@@ -31,13 +31,14 @@ def createShadowObjects(context, objs):
 
     sdw_objs = []
     for obj in objs:
-        if obj.type == "MESH":
-            sdw_obj = obj.copy()
-            sdw_obj.data = obj.data.copy()
-            utils.setData(sdw_obj)
-            sdw_obj.name = obj.name + "_shadow"
-            sdw_obj.is_holdout = True
-            sdw_objs.append(sdw_obj)
+        if obj is not None:
+            if obj.type == "MESH":
+                sdw_obj = obj.copy()
+                sdw_obj.data = obj.data.copy()
+                utils.setData(sdw_obj)
+                sdw_obj.name = obj.name + "_shadow"
+                sdw_obj.is_holdout = True
+                sdw_objs.append(sdw_obj)
     
     # Place plane for shadows
     bpy.ops.mesh.primitive_plane_add(size=1000, enter_editmode=False, align='WORLD', location=(0, 0, 0), scale=(1, 1, 1))
